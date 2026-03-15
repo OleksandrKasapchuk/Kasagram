@@ -1,6 +1,6 @@
-# Tashkegram
+# Kasagram
 
-**Tashkegram** - це копія Instagram, створена за допомогою Django.
+**Kasagram** - це копія Instagram, створена за допомогою Django.
 
 ## Функціональні можливості
 

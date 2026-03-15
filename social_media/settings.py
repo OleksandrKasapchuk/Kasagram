@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-r0%2kgsrp7mpuygu%uo)w)vbl@19)lur^2$hgr2*f3%%i!1^$d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.onrender.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -80,22 +80,21 @@ WSGI_APPLICATION = 'social_media.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-import sys
 import dj_database_url
 
-if 'collectstatic' in sys.argv:
+if os.environ.get("DATABASE_URL"):
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.dummy',
-        }
-    }
-else:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.environ.get('DATABASE_URL'),
+        "default": dj_database_url.config(
             conn_max_age=600,
             ssl_require=True
         )
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
 
 # Password validation
