@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{user.username}}{% endblock %}
 {% block content %}
-
+{% load static %}
 <article class="main-container d-flex flex-column">
     <section class="d-flex gap3 ps-4 profile-header">
-        <img src="{{ user.avatar.url }}" class="profile-avatar">
+        {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" class="profile-avatar">
+        {% else %}
+            <img src="{% static 'images/default_avatar.jpg' %}" class="profile-avatar">
+        {% endif %}
         <article class="d-flex flex-column gap">
             <article class="d-flex gap">
                 <a href="{% url 'user-info' user.pk %}" class="h4">{{user.username}}</a>

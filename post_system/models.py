@@ -1,11 +1,11 @@
 from django.db import models
 from auth_system.models import *
-
+from cloudinary.models import CloudinaryField
 
 class Post(models.Model):
 	content = models.TextField(blank=True,null=True)
 	user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="posts")
-	media = models.FileField(upload_to="post_media/",)
+	media = CloudinaryField(resource_type="auto")
 	date_published = models.DateTimeField(auto_now_add=True)
 
 	def __str__(self):

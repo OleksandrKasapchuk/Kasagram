@@ -8,7 +8,11 @@
 {% for user in users %}
     <article class="d-flex">
         <a href="{% url 'user-info' user.pk %}" class="h3">
-            <img src="{{ user.avatar.url }}" class="sidebar-avatar">
+            {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" class="sidebar-avatar">
+            {% else %}
+                <img src="{% static 'images/default_avatar.jpg' %}" class="sidebar-avatar">
+            {% endif %}
             {{ user }}
         </a>
         <button id="follow-button-{{ user.pk }}" class="a-btn" onclick="toggleFollow({{ user.pk }})">
