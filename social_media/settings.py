@@ -40,7 +40,7 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-
+WHITENOISE_COMPRESS = False
 # 2. Для зворотної сумісності (щоб Cloudinary не падав)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
