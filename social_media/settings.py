@@ -31,18 +31,17 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
 
-# Замість DEFAULT_FILE_STORAGE = ...
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
     },
 }
 WHITENOISE_COMPRESS = False
 # 2. Для зворотної сумісності (щоб Cloudinary не падав)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # 3. Шляхи
 STATIC_ROOT = BASE_DIR / "staticfiles"
