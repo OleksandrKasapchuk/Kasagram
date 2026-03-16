@@ -30,27 +30,19 @@ CLOUDINARY_STORAGE = {
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
+# settings.py
 
+# Це змусить Whitenoise ігнорувати файли адмінки при стисненні
+WHITENOISE_IGNORE_PATTERNS = ['admin/js/vendor/select2/i18n/*.js']
+# Замість DEFAULT_FILE_STORAGE = ...
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-WHITENOISE_COMPRESS = False
-# 2. Для зворотної сумісності (щоб Cloudinary не падав)
-
-
-# 3. Шляхи
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-
-# 4. ВАЖЛИВО: Оптимізація для уникнення помилок стиснення адмінки
-WHITENOISE_AUTOREFRESH = False
-WHITENOISE_IGNORE_PATTERNS = ['admin/js/vendor/select2/i18n/*.js']
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -83,13 +75,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-	'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'social_media.urls'
@@ -167,8 +159,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
+STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+	BASE_DIR / 'static',
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 

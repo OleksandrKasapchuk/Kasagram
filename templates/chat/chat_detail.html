@@ -3,6 +3,7 @@
 {% block title %}Chat{% endblock %}
 
 {% block content %}
+{% load static %}
 <article class="chat-container">
     <h2>Chat with {{ participant.username }}</h2>
     <section id="chat-messages" class="d-flex flex-column">

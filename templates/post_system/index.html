@@ -9,13 +9,14 @@
 {% endblock %}
 
 {% block content %}
+{% load static %}
 {% for post in posts %}
 	<br>
 	<article class="post-container">
 		<section>
 			<article class="post-user-info d-flex">
 				<a href="{% url 'user-info' post.user.pk %}"><img 
-					{% if message.user.avatar %}
+					{% if post.user.avatar %}
 							src="{{ post.user.avatar.url }}" 
 					{% else %}
 						src="{% static 'images/default_avatar.jpg' %}"
