@@ -8,7 +8,15 @@
     <section id="chat-messages" class="d-flex flex-column">
         {% for message in chat.messages.all %}
             <article class="d-flex mx-4 {% if request.user == message.user %}flex-row-reverse{% endif %}" id="message-{{ message.pk }}">
-                <a href="{% url 'user-info' message.user.pk %}"><img src="{{ message.user.avatar.url }}" style="border-radius: 30px;width: 36px;height: 36px;"></a>
+                <a href="{% url 'user-info' message.user.pk %}">
+                    <img 
+                    {% if message.user.avatar %}
+							src="{{ message.user.avatar.url }}"
+						{% else %}
+							src="{% static 'images/default_avatar.jpg' %}"
+						{% endif %}
+                    style="border-radius: 30px;width: 36px;height: 36px;">
+                </a>
                 <p class="message d-flex {% if request.user == message.user %}bg-info{% endif %}">
                     {{ message.content }}
                 </p>

@@ -14,7 +14,13 @@
 	<article class="post-container">
 		<section>
 			<article class="post-user-info d-flex">
-				<a href="{% url 'user-info' post.user.pk %}"><img src="{{ post.user.avatar.url }}" class="profile-avatar" style="width: 36px;height: 36px;"></a>
+				<a href="{% url 'user-info' post.user.pk %}"><img 
+					{% if message.user.avatar %}
+							src="{{ post.user.avatar.url }}" 
+					{% else %}
+						src="{% static 'images/default_avatar.jpg' %}"
+					{% endif %}
+					class="profile-avatar" style="width: 36px;height: 36px;"></a>
 				<a href="{% url 'user-info' post.user.pk %}"><h4><b>{{ post.user }}</b></h4></a>
 				<h4 class="gray-text">{{ post.date_published.date }}</h4>
 			</article>

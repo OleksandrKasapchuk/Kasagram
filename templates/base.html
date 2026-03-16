@@ -45,7 +45,11 @@
 				</li>
 				<li class="sidebar-item {% if request.resolver_match.url_name == 'user-info' and request.user == user %}active{% endif %}">
 					<a href="{% url 'user-info' request.user.pk %}">
-						<img src="{{ request.user.avatar.url }}" class="sidebar-avatar">
+						{% if user.avatar %}
+							<img src="{{ request.user.avatar.url }}" class="sidebar-avatar">
+						{% else %}
+							<img src="{% static 'images/default_avatar.jpg' %}" class="sidebar-avatar">
+						{% endif %}
 						<span class="sidebar-text">Profile</span>
 					</a>
 				</li>
