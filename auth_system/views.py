@@ -55,6 +55,7 @@ def logout_user(request):
     messages.success(request, ("You were logged out"))
     return redirect("post:index")
 
+@login_required
 def user_info(request, pk):
     try:
         user = CustomUser.objects.get(id=pk)
