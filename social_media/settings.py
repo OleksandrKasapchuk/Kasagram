@@ -30,7 +30,10 @@ CLOUDINARY_STORAGE = {
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
+# settings.py
 
+# Це змусить Whitenoise ігнорувати файли адмінки при стисненні
+WHITENOISE_IGNORE_PATTERNS = ['admin/js/vendor/select2/i18n/*.js']
 # Замість DEFAULT_FILE_STORAGE = ...
 STORAGES = {
     "default": {
@@ -40,10 +43,7 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-# ... після load_dotenv(os.path.join(BASE_DIR, '.env')) ...
-print(f"DEBUG: PATH to .env: {os.path.join(BASE_DIR, '.env')}")
-print(f"DEBUG: API KEY found: {os.environ.get('CLOUDINARY_API_KEY')}")
-print(f"DEBUG: CLOUD NAME found: {os.environ.get('CLOUDINARY_CLOUD_NAME')}")
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
