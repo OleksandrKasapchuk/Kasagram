@@ -22,7 +22,7 @@
                     {{ message.content }}
                 </p>
                 {% if request.user == message.user %}
-                    <span onclick='deleteMessage({{message.pk}})' class="material-symbols-outlined pointer p-3 delete-btn">delete</span>
+                    <span onclick="deleteMessage({{message.pk}})" class="material-symbols-outlined pointer p-3 delete-btn" style="font-size:24px; line-height:36px;">delete</span>
                 {% endif %}
             </article>
         {% endfor %}
@@ -132,7 +132,7 @@
                     <p class="message d-flex ${message.is_user_message ? 'bg-info' : ''}">
                         ${message.content}
                     </p>
-                    ${message.is_user_message ? `<a href="javascript:void(0);" class="p-3 delete-btn" onclick="deleteMessage(${message.id})"><span class="material-symbols-outlined pointer">delete</span></a>` : ''}
+                    ${message.is_user_message ? `  <span onclick="deleteMessage(${message.id})" class="material-symbols-outlined pointer p-3 delete-btn">delete</span>` : ''}
                 `;
                 chatMessages.appendChild(newMessage);
             });

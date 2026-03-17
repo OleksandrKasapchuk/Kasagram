@@ -119,15 +119,7 @@ class LikeView(View):
             liked = False
         else:
             like = Like.objects.create(post=post, user=request.user)
-            if like.user != post.user:
-                Notification.objects.create(
-						user=post.user,
-						post=post,
-						type="post",
-						message=f'{request.user.username} liked your post.',
-					)
             liked = True
-        
         data = {
             'liked': liked,
             'likes_count': post.likes.count()

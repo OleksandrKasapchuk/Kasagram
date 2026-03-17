@@ -2,12 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.http import JsonResponse
-from django.views.generic import View, ListView, DetailView, TemplateView, DeleteView
+from django.views.generic import View, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from auth_system.models import CustomUser
 from .models import Chat, Message
-from notifications.models import Notification
+from django.templatetags.static import static
 from post_system.mixins import *
 
 
@@ -57,22 +57,12 @@ class ChatDetailView(LoginRequiredMixin, View):
                 content=content
             )
 
-            # Create notification for the other participant
-            other_participant = chat.participants.exclude(id=request.user.pk).first()
-            if other_participant:
-                Notification.objects.create(
-                    user=other_participant,
-                    type='chat',
-                    chat=chat,
-                    message=f'{request.user.username} sent you a message in the chat.'
-                )
-
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
                     'username': request.user.username,
                     'content': message.content,
-                    'avatar_url': request.user.avatar.url
+                    'avatar_url': request.user.avatar.url if request.user.avatar.url else "../static/images/default_avatar.png"
                 })
             return redirect('chat:chat_detail', pk=chat.pk)
         except Exception as e:
@@ -91,10 +81,12 @@ class ChatMessagesView(LoginRequiredMixin, View):
         messages_data = []
         for message in messages:
             messages_data.append({
+                'id': message.pk,
+                'chat': message.chat.pk,
                 'content': message.content,
-                'avatar_url': message.user.avatar.url,
+                'avatar_url': message.user.avatar.url if message.user.avatar.url else static("images/default_avatar.jpg"),
                 'is_user_message': message.user == request.user,
-                'delete_url': reverse_lazy('chat:delete_message', args=[message.chat.pk, message.pk])
+                'delete_url': reverse_lazy('chat:delete_message', args=[message.pk])
             })
 
         return JsonResponse({'success': True, 'messages': messages_data})
