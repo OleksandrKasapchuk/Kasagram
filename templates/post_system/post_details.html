@@ -20,7 +20,14 @@
 				<li id="comment-{{ comment.pk }}" class="comment-container mt-3 d-flex">
 					<section class="d-flex flex-column">
 						<section class="d-flex">
-							<a href="{% url 'user-info' comment.user.pk %}"><img src="{{ comment.user.avatar.url }}" class="sidebar-avatar me-3"></a>
+							<a href="{% url 'user-info' comment.user.pk %}">
+								<img 
+								{% if notification.actor.avatar %}
+									src="{{ comment.user.avatar.url }}"
+								{% else %}
+									src="{% static 'images/default_avatar.jpg' %}" 
+								{% endif %} class="sidebar-avatar me-3">
+							</a>
 							<p><a href="{% url 'user-info' comment.user.pk %}"><b>{{ comment.user }}</b></a> {{comment.content}}</p>
 						</section>					
 						<p class="gray-text">{{ post.date_published.date }}</p>
