@@ -46,10 +46,36 @@
 		<br>
 	</article>
 {% endfor %}
+<div class="pagination">
+    <span class="step-links">
+        {% if posts.has_previous %}
+            <a href="?page=1&category={{ category }}">Перша сторінка</a>
+            <a href="?page={{ posts.previous_page_number }}&category={{ category }}">Попередня</a>
+        {% endif %}
+		
+		<p>has_next: {{ posts.has_next }}</p>
+<p>has_prev: {{ posts.has_previous }}</p>
+<p>total pages: {{ posts.paginator.num_pages }}</p>
+		<p>{{ posts|length }}</p>
+<p>{{ posts.paginator }}</p>
+<p>{{ posts.number }}</p>
+        <span class="current">
+            Сторінка {{ posts.number }} з {{ posts.paginator.num_pages|default:"?" }}.
+        </span>
+
+        {% if posts.has_next %}
+            <a href="?page={{ posts.next_page_number }}&category={{ category }}">Наступна</a>
+            <a href="?page={{ posts.paginator.num_pages }}&category={{ category }}">Остання сторінка</a>
+        {% endif %}
+    </span>
+</div>
 <script>
 	function filterPosts(category) {
-        window.location.href = `?category=${category}`;
-    }
+		const url = new URL(window.location.href);
+		url.searchParams.set('category', category);
+		url.searchParams.delete('page'); // скидаємо сторінку
+		window.location.href = url.toString();
+	}
 	function changeFilter(filter) {
 		const url = new URL(window.location.href);
 		url.searchParams.set('filter', filter);
