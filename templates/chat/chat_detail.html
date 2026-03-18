@@ -4,8 +4,8 @@
 
 {% block content %}
 {% load static %}
-<article class="chat-container">
-    <h2>Chat with {{ participant.username }}</h2>
+<article class="chat-container d-flex flex-column">
+    <h2>Chat with <a href="{% url 'user-info' participant.pk %}">{{ participant.username }}</a></h2>
     <section id="chat-messages" class="d-flex flex-column">
         {% for message in chat.messages.all %}
             <article class="d-flex mx-4 {% if request.user == message.user %}flex-row-reverse{% endif %}" id="message-{{ message.pk }}">

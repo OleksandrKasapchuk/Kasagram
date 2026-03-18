@@ -143,6 +143,7 @@ li > a {
 }
 .main-container {
 	margin: 40px 0 0 60px;
+	display: flex;
 }
 .gap {
 	gap: 25px;
@@ -154,7 +155,8 @@ li > a {
 	gap: 80px;
 }
 .chat-container {
-	width: 1000px;
+	width: 70vw;
+	max-width: 1000px;
 	border: 2px solid rgba(255, 255, 255, 0.2);
 	height: 100vh;
 }
@@ -228,13 +230,14 @@ li > a {
 	}
 	.sidebar {
 		width: 100vw;
-		margin-top: 95vh;
-		height: 50px;
+		margin-top: 90vh;
+		height: 10vh;
 		background-color: black;
 	} 
 	.main-index, .home-header {
 		margin: 0px;
-		max-width: 100vw;
+		max-width: 99vw;
+		padding: 5px;
 	}
 	.home-header {
 		width: 100vw;
@@ -250,6 +253,10 @@ li > a {
 	.profile-avatar {
 		width: 100px;
 		height: 100px;
+	}
+	.chat-container {
+		width: 99vw;
+		height: 90vh;
 	}
 }
 @media(max-width:500px) {
