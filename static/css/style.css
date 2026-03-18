@@ -142,7 +142,7 @@ li > a {
 	height: 24px;
 }
 .main-container {
-	margin: 40px 0 0 60px;
+	margin: 40px 0 0 0;
 	display: flex;
 }
 .gap {
@@ -209,6 +209,10 @@ li > a {
     font-size: 12px;
 }
 
+.user-container {
+	width: 75%;
+}
+
 @media(max-width: 1550px) {
 	.sidebar {
 		width: 200px;
@@ -217,6 +221,10 @@ li > a {
 @media(max-width: 1300px) {
 	.main-index, .home-header {
 		margin-left: 200px;
+	}
+	.profile-post-container {
+		width: 250px;
+		height: 250px;
 	}
 }
 @media(max-width: 1000px) {
@@ -258,6 +266,14 @@ li > a {
 		width: 99vw;
 		height: 90vh;
 	}
+	.user-container {
+		width: 99%;
+	}
+	.profile-post-container {
+		width: 150px;
+		height: 150px;
+	}
+
 }
 @media(max-width:500px) {
 	.post-container {
@@ -280,6 +296,10 @@ li > a {
 	}
 	.row {
 		justify-content: center;
+	}
+	.profile-post-container {
+		width: 50%;
+		
 	}
 }
 /* * {

@@ -2,43 +2,48 @@
 {% block title %}{{user.username}}{% endblock %}
 {% block content %}
 {% load static %}
-<article class="main-container d-flex flex-column">
-    <section class="d-flex gap3 ps-4 profile-header">
-        {% if user.avatar %}
-            <img src="{{ user.avatar.url }}" class="profile-avatar">
-        {% else %}
-            <img src="{% static 'images/default_avatar.jpg' %}" class="profile-avatar">
-        {% endif %}
-        <article class="d-flex flex-column gap">
-            <article class="d-flex gap">
-                <a href="{% url 'user-info' user.pk %}" class="h4">{{user.username}}</a>
-                {% if request.user == user %}
-                    <a href="{% url 'edit-user' user.id %}" class="a-btn">Edit profile</a>
-                    <span class="material-symbols-outlined">settings</span>
-                {% else %}
-                    <button id="follow-button-{{ user.pk }}" class="a-btn" onclick="toggleFollow({{ user.pk }})">
-                        {% if user.pk in following %}Unfollow{% else %}Follow{% endif %}
-                    </button>
-                    <a href="{% url 'chat:start_chat' user.pk %}" class="a-btn">Start Chat</a>
-                {% endif %}
+<article class="main-container d-flex justify-content-center">
+    <article class="d-flex flex-column align-items-center user-container">
+        <section class="d-flex gap3 ps-4 profile-header">
+            {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" class="profile-avatar">
+            {% else %}
+                <img src="{% static 'images/default_avatar.jpg' %}" class="profile-avatar">
+            {% endif %}
+            <article class="d-flex flex-column gap">
+                <article class="d-flex gap">
+                    <a href="{% url 'user-info' user.pk %}" class="h4">{{user.username}}</a>
+                    {% if request.user == user %}
+                        <a href="{% url 'edit-user' user.id %}" class="a-btn">Edit profile</a>
+                        <span class="material-symbols-outlined">settings</span>
+                    {% else %}
+                        <button id="follow-button-{{ user.pk }}" class="a-btn" onclick="toggleFollow({{ user.pk }})">
+                            {% if user.pk in following %}Unfollow{% else %}Follow{% endif %}
+                        </button>
+                        <a href="{% url 'chat:start_chat' user.pk %}" class="a-btn">Start Chat</a>
+                    {% endif %}
+                </article>
+                <ul class="gap d-flex">
+                    <li><b>{{user.posts.count}}</b> posts</li>
+                    <li><a href="{% url 'post:get-followers' user.pk %}"><span id="followers-count"><b>{{ user.followers.count }}</b></span> followers</a></li> 
+                    <li><a href="{% url 'post:get-following' user.pk %}"><span id="following-count"><b>{{ user.following.count }}</b></span> following</a></li>
+                </ul>
+                <b>{{user.first_name}} {{user.last_name}}</b>
+                
             </article>
-            <ul class="gap d-flex">
-                <li><b>{{user.posts.count}}</b> posts</li>
-                <li><a href="{% url 'post:get-followers' user.pk %}"><span id="followers-count"><b>{{ user.followers.count }}</b></span> followers</a></li> 
-                <li><a href="{% url 'post:get-following' user.pk %}"><span id="following-count"><b>{{ user.following.count }}</b></span> following</a></li>
-            </ul>
-            <b>{{user.first_name}} {{user.last_name}}</b>
+        </section>
+        
+            <h2>User posts:</h2>
             
-        </article>
-    </section>
-    <h2>User posts:</h2>
-    <div class="row">
-        {% for post in user.posts.all %}
-        <div class="col-md-4 profile-post-container">
-            <img src="{{ post.media.url }}"  class="profile-post-media">
-            <a class="post-hover-info" href="{% url 'post:post-details' post.pk %}"><span><span class="heart">&hearts;</span> {{post.likes.count}}</span> <span><span class="material-symbols-outlined pointer">comment</span>{{post.comments.count}}</span></a>
-        </div>
-        {% endfor %}
-    </div>
+            <section class="row">
+                {% for post in user.posts.all %}
+                <div class="col-md-4 profile-post-container">
+                    <img src="{{ post.media.url }}"  class="profile-post-media">
+                    <a class="post-hover-info" href="{% url 'post:post-details' post.pk %}"><span><span class="heart">&hearts;</span> {{post.likes.count}}</span> <span><span class="material-symbols-outlined pointer">comment</span>{{post.comments.count}}</span></a>
+                </div>
+                {% endfor %}
+            </section>
+    
+    </article>
 </article>
 {% endblock %}
