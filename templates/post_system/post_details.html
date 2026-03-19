@@ -2,8 +2,8 @@
 
 {% block content %}
 {% load static %}
-<article class="main-container d-flex">
-	<img src="{{post.media.url}}" style="width: 600px; height: 600px;">
+<article class="main-container d-flex justify-content-center" >
+	<img src="{{post.media.url}}" class="post-detail-media" >
 	<article class="d-flex flex-column p-3 pt-0" style="width: 40%;">
 		<section class="post-user-info d-flex border-bottom border-secondary">
 			<a href="{% url 'user-info' post.user.pk %}"><img src="{{ post.user.avatar.url }}" class="sidebar-avatar me-3"></a>

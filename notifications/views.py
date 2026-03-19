@@ -10,11 +10,9 @@ from .models import Notification
 class NotificationView(LoginRequiredMixin,ListView):
 	model = Notification
 	template_name = 'notifications/notifications.html'
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context["notifications"] = Notification.objects.filter(user=self.kwargs["pk"])
-		return context
+	context_object_name = "notifications"
+	def get_queryset(self):
+		return Notification.objects.filter(user_id=self.kwargs["pk"]).order_by('-created_at')[:5]
 
 @login_required
 def mark_notifications_as_read(request):

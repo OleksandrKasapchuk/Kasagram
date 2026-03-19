@@ -195,6 +195,11 @@ li > a {
     word-break: break-word;  /* Додаткова страховка для дуже довгих слів */
 }
 
+.post-detail-media {
+	width: 500px;
+	height: auto;
+}
+
 .delete-btn {
 	color: transparent;
 	transition: 0.3s;
@@ -274,6 +279,10 @@ li > a {
 	.profile-post-container {
 		width: 150px;
 		height: 150px;
+	}
+	.post-detail-media {
+		width: 60vw;
+		height: 70vh;
 	}
 
 }
