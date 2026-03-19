@@ -5,7 +5,7 @@
 {% block content %}
 {% load static %}
 <article class="chat-container d-flex flex-column">
-    <h2 class="p-4">
+    <section class="p-3 mb-1 border-bottom border-secondary">
         <a href="{% url 'user-info' participant.pk %}"><img
                 {% if participant.avatar %}
                 src="{{ participant.avatar.url }}"
@@ -13,22 +13,23 @@
                 src="{% static 'images/default_avatar.jpg' %}"
                 {% endif %}
                 class="profile-avatar" style="width: 36px;height: 36px;"></a>
-        <a href="{% url 'user-info' participant.pk %}">{{ participant.username }}</a></h2>
-    <hr>
+        <a href="{% url 'user-info' participant.pk %}" class="h2">{{ participant.username }}</a>
+    </section>
+
     <section id="chat-messages" class="d-flex flex-column">
         {% for message in chat.messages.all %}
-            <article class="d-flex mx-4 {% if request.user == message.user %}flex-row-reverse{% endif %}" id="message-{{ message.pk }}">
-                <p class="message d-flex {% if request.user == message.user %}bg-info{% endif %}">
+            <article class="d-flex mx-3 {% if request.user == message.user %}flex-row-reverse{% endif %}" id="message-{{ message.pk }}">
+                <p class="message mb-1 px-3 py-2 d-flex flex-wrap {% if request.user == message.user %}bg-info{% endif %}">
                     {{ message.content }}
                 </p>
                 {% if request.user == message.user %}
-                    <span onclick="deleteMessage({{message.pk}})" class="material-symbols-outlined pointer p-3 delete-btn" style="font-size:24px; line-height:36px;">delete</span>
+                    <span onclick="deleteMessage({{message.pk}})" class="material-symbols-outlined pointer p-2 delete-btn">delete</span>
                 {% endif %}
             </article>
         {% endfor %}
     </section>
-    <section class="msg-input d-flex m-4">
-        <input id="message-content" placeholder="Type a message...">
+    <section class="msg-input d-flex m-2">
+        <textarea id="message-content" placeholder="Type a message..."></textarea>
         <span class="material-symbols-outlined pointer p-3 pt-2" onclick="SendMessage()">Send</span>
     </section>
 </article>
@@ -62,7 +63,7 @@
             if (data.success) {
                 const chatMessages = document.getElementById('chat-messages');
                 const newMessage = document.createElement('article');
-                newMessage.classList.add('d-flex', 'mx-4', 'flex-row-reverse');
+                newMessage.classList.add('d-flex', 'mx-3', 'flex-row-reverse');
                 newMessage.id = `message-${data.message_id}`;
                 newMessage.innerHTML = `
                     <img src="${data.avatar_url}" style="border-radius: 30px;width: 36px;height: 36px;">
@@ -122,13 +123,13 @@
             chatMessages.innerHTML = '';
             data.messages.forEach(message => {
                 const newMessage = document.createElement('article');
-                newMessage.classList.add('d-flex', 'mx-4');
+                newMessage.classList.add('d-flex', 'mx-3');
                 newMessage.id = `message-${message.id}`;
                 if (message.is_user_message) {
                     newMessage.classList.add('flex-row-reverse');
                 }
                 newMessage.innerHTML = `
-                    <p class="message d-flex ${message.is_user_message ? 'bg-info' : ''}">
+                    <p class="message d-flex px-3 py-2 ${message.is_user_message ? 'bg-info' : ''}">
                         ${message.content}
                     </p>
                     ${message.is_user_message ? `  <span onclick="deleteMessage(${message.id})" class="material-symbols-outlined pointer p-3 delete-btn">delete</span>` : ''}
@@ -140,9 +141,9 @@
     }
 
     // Fetch messages every 5 seconds
-    setInterval(fetchMessages, 5000);
+    // setInterval(fetchMessages, 500000);
 
     // Initial fetch
-    fetchMessages();
+    // fetchMessages();
 </script>
 {% endblock %}
