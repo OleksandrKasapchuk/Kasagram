@@ -33,6 +33,8 @@ class Notification(models.Model):
         if self.type == "chat" and self.chat:
             return reverse("chat:chat_detail", args=[self.chat.pk])
 
+        if self.type == "comment" and self.comment:
+            return reverse("post:post-details", args=[self.comment.post.pk])
         return "#"
     
     def get_message(self):

@@ -139,11 +139,10 @@
         })
         .catch(error => console.error('Error:', error));
     }
-
     // Fetch messages every 5 seconds
-    // setInterval(fetchMessages, 500000);
+    setInterval(fetchMessages, 5000);
 
     // Initial fetch
-    // fetchMessages();
+    fetchMessages();
 </script>
 {% endblock %}
