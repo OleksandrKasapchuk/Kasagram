@@ -15,7 +15,7 @@ class Index(ListView):
     model = Post
     context_object_name = "posts"
     template_name = "post_system/index.html"
-    paginate_by = 1  # Обмеження на кількість постів на сторінці
+    paginate_by = 3  # Обмеження на кількість постів на сторінці
 
     def get_queryset(self):
         # Отримуємо категорію з параметрів запиту
@@ -27,16 +27,12 @@ class Index(ListView):
             following_users = Subscription.objects.filter(user_from=self.request.user).values_list('user_to', flat=True)
             return Post.objects.filter(user__in=following_users).order_by('-date_published')
         else:
-            qs = Post.objects.all().order_by('-date_published')
-			
-            print(type(qs))  # має бути <class 'django.db.models.query.QuerySet'>
-            return qs
+            return  Post.objects.all().order_by('-date_published')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         category = self.request.GET.get('category', 'for_you')
-        print(type(context['posts'])) 
         context['category'] = category
         return context
 

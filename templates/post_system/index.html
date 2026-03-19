@@ -15,7 +15,7 @@
 	<article class="post-container">
 		<section>
 			<article class="post-user-info d-flex">
-				<a href="{% url 'user-info' post.user.pk %}"><img 
+				<a href="{% url 'user-info' post.user.pk %}"><img
 					{% if post.user.avatar %}
 							src="{{ post.user.avatar.url }}" 
 					{% else %}
@@ -48,24 +48,18 @@
 {% endfor %}
 <div class="pagination">
     <span class="step-links">
-        {% if posts.has_previous %}
-            <a href="?page=1&category={{ category }}">Перша сторінка</a>
-            <a href="?page={{ posts.previous_page_number }}&category={{ category }}">Попередня</a>
+        {% if page_obj.has_previous %}
+            <a href="?page=1&category={{ category }}">First</a>
+            <a href="?page={{ posts.previous_page_number }}&category={{ category }}">Previous</a>
         {% endif %}
-		
-		<p>has_next: {{ posts.has_next }}</p>
-<p>has_prev: {{ posts.has_previous }}</p>
-<p>total pages: {{ posts.paginator.num_pages }}</p>
-		<p>{{ posts|length }}</p>
-<p>{{ posts.paginator }}</p>
-<p>{{ posts.number }}</p>
+
         <span class="current">
-            Сторінка {{ posts.number }} з {{ posts.paginator.num_pages|default:"?" }}.
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages|default:"?" }}.
         </span>
 
-        {% if posts.has_next %}
-            <a href="?page={{ posts.next_page_number }}&category={{ category }}">Наступна</a>
-            <a href="?page={{ posts.paginator.num_pages }}&category={{ category }}">Остання сторінка</a>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&category={{ category }}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&category={{ category }}">Last</a>
         {% endif %}
     </span>
 </div>

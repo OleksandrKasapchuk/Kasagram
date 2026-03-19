@@ -5,19 +5,19 @@
 {% block content %}
 {% load static %}
 <article class="chat-container d-flex flex-column">
-    <h2>Chat with <a href="{% url 'user-info' participant.pk %}">{{ participant.username }}</a></h2>
+    <h2 class="p-4">
+        <a href="{% url 'user-info' participant.pk %}"><img
+                {% if participant.avatar %}
+                src="{{ participant.avatar.url }}"
+                {% else %}
+                src="{% static 'images/default_avatar.jpg' %}"
+                {% endif %}
+                class="profile-avatar" style="width: 36px;height: 36px;"></a>
+        <a href="{% url 'user-info' participant.pk %}">{{ participant.username }}</a></h2>
+    <hr>
     <section id="chat-messages" class="d-flex flex-column">
         {% for message in chat.messages.all %}
             <article class="d-flex mx-4 {% if request.user == message.user %}flex-row-reverse{% endif %}" id="message-{{ message.pk }}">
-                <a href="{% url 'user-info' message.user.pk %}">
-                    <img 
-                    {% if message.user.avatar %}
-							src="{{ message.user.avatar.url }}"
-						{% else %}
-							src="{% static 'images/default_avatar.jpg' %}"
-						{% endif %}
-                    style="border-radius: 30px;width: 36px;height: 36px;">
-                </a>
                 <p class="message d-flex {% if request.user == message.user %}bg-info{% endif %}">
                     {{ message.content }}
                 </p>
@@ -128,7 +128,6 @@
                     newMessage.classList.add('flex-row-reverse');
                 }
                 newMessage.innerHTML = `
-                    <img src="${message.avatar_url}" style="border-radius: 30px;width: 36px;height: 36px;">
                     <p class="message d-flex ${message.is_user_message ? 'bg-info' : ''}">
                         ${message.content}
                     </p>
