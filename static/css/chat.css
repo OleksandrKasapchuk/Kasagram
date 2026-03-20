@@ -1,0 +1,27 @@
+.chat-container {
+	width: 70vw;
+	max-width: 1000px;
+	border: 2px solid rgba(255, 255, 255, 0.2);
+	height: 100vh;
+}
+
+#chat-messages {
+	height: 85vh;
+	overflow-y: scroll;
+}
+
+#chat-messages::-webkit-scrollbar {
+    width: 0;
+}
+
+.message {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 1rem;
+    border-radius: 15px;
+
+	max-width: 75%;          /* Обмежуємо ширину повідомлення */
+    word-wrap: break-word;   /* Старий стандарт для переносу */
+    overflow-wrap: break-word; /* Сучасний стандарт */
+    word-break: break-word;  /* Додаткова страховка для дуже довгих слів */
+}
+

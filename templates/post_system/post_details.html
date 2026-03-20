@@ -2,60 +2,63 @@
 
 {% block content %}
 {% load static %}
-<article class="main-container d-flex justify-content-center" >
-	<img src="{{post.media.url}}" class="post-detail-media" >
-	<article class="d-flex flex-column p-3 pt-0" style="width: 40%;">
-		<section class="post-user-info d-flex border-bottom border-secondary">
-			<a href="{% url 'user-info' post.user.pk %}"><img src="{{ post.user.avatar.url }}" class="sidebar-avatar me-3"></a>
-			<a href="{% url 'user-info' post.user.pk %}"><b>{{ post.user }}</b></a>
-		</section>
-		{% if post.content %}
-			<section class="d-flex">
+<article class="main-container" >
+	<article class="post-detail-container d-flex justify-content-center">
+		<img src="{{post.media.url}}" class="post-detail-media">
+		<article class="d-flex flex-column p-3 py-0 post-detail-sidebar">
+			<section class="post-user-info d-flex border-bottom border-secondary">
 				<a href="{% url 'user-info' post.user.pk %}"><img src="{{ post.user.avatar.url }}" class="sidebar-avatar me-3"></a>
-				<p><a href="{% url 'user-info' post.user.pk %}"><b>{{post.user.username}}</b></a> {{ post.content }}</p>
-			</section>	
-		{% endif %}
-		<ul id="comments" class="comments">
-			{% for comment in post.comments.all %}
-				<li id="comment-{{ comment.pk }}" class="comment-container mt-3 d-flex">
-					<section class="d-flex flex-column">
-						<section class="d-flex">
-							<a href="{% url 'user-info' comment.user.pk %}">
-								<img 
-								{% if notification.actor.avatar %}
-									src="{{ comment.user.avatar.url }}"
-								{% else %}
-									src="{% static 'images/default_avatar.jpg' %}" 
-								{% endif %} class="sidebar-avatar me-3">
-							</a>
-							<p><a href="{% url 'user-info' comment.user.pk %}"><b>{{ comment.user }}</b></a> {{comment.content}}</p>
-						</section>					
-						<p class="gray-text">{{ post.date_published.date }}</p>
-					</section>
-					{% if request.user == comment.user %}
-						<section>
-							<a href="{% url 'post:update-comment' comment.pk %}"><span class="material-symbols-outlined pointer">edit</span></a>
-							<span class="material-symbols-outlined pointer" onclick="deleteComment({{ comment.pk }})">delete</span>
+				<a href="{% url 'user-info' post.user.pk %}"><b>{{ post.user }}</b></a>
+			</section>
+			{% if post.content %}
+				<section class="d-flex">
+					<a href="{% url 'user-info' post.user.pk %}"><img src="{{ post.user.avatar.url }}" class="sidebar-avatar me-3"></a>
+					<p><a href="{% url 'user-info' post.user.pk %}"><b>{{post.user.username}}</b></a> {{ post.content }}</p>
+				</section>	
+			{% endif %}
+			<ul id="comments" class="comments">
+				{% for comment in post.comments.all %}
+					<li id="comment-{{ comment.pk }}" class="d-flex comment-container mt-3 ">
+						<section class="d-flex flex-column " style="flex-grow: 1;">
+							<section class="d-flex">
+								<a href="{% url 'user-info' comment.user.pk %}">
+									<img 
+									{% if notification.actor.avatar %}
+										src="{{ comment.user.avatar.url }}"
+									{% else %}
+										src="{% static 'images/default_avatar.jpg' %}" 
+									{% endif %} class="sidebar-avatar me-3">
+								</a>
+								<p><a href="{% url 'user-info' comment.user.pk %}"><b>{{ comment.user }}</b></a> {{comment.content}}</p>
+							</section>					
+							<p class="gray-text">{{ post.date_published.date }}</p>
 						</section>
-					{% endif %}
-				</li>
-			{% endfor %}
-		</ul>
-	<section>
-		<span onclick="likePost({{post.pk}})" class="pointer like-btn {% for like in post.likes.all %}{% if request.user == like.user %}liked{% endif %}{% endfor %}" id="like-btn-{{ post.pk }}">
-			<span class="heart">&hearts;</span> 
-		</span>
-		{% if request.user == post.user %}
-			<a href="{% url 'post:update_post' post.pk %}" class="p-2"><span class="material-symbols-outlined pointer">edit</span></a>
-			<a href="{% url 'post:delete_post' post.pk %}" class="p-2"><span class="material-symbols-outlined pointer">delete</span></a>
-		{% endif %}
-		<span class="material-symbols-outlined pointer" class="p-2">comment</span>
-	</section>
-	<section>
-		<p><span id="like-count-{{ post.pk }}">{{ post.likes.count }}</span> likes</p>
-		<p class="gray-text">{{ post.date_published.date }}</p>
-	</section>
-	<section class="msg-input d-flex"><input id="message-content" placeholder="Add a comment..."><span class="material-symbols-outlined pointer p-3 pt-2" onclick=SendComment({{post.pk}})>Send</span></section>
+						{% if request.user == comment.user %}
+							<section>
+								<a href="{% url 'post:update-comment' comment.pk %}"><span class="material-symbols-outlined pointer">edit</span></a>
+								<span class="material-symbols-outlined pointer" onclick="deleteComment({{ comment.pk }})">delete</span>
+							</section>
+						{% endif %}
+					</li>
+				{% endfor %}
+			</ul>
+		<section>
+			<span onclick="likePost({{post.pk}})" class="pointer like-btn {% for like in post.likes.all %}{% if request.user == like.user %}liked{% endif %}{% endfor %}" id="like-btn-{{ post.pk }}">
+				<span class="heart">&hearts;</span> 
+			</span>
+			{% if request.user == post.user %}
+				<a href="{% url 'post:update_post' post.pk %}" class="p-2"><span class="material-symbols-outlined pointer">edit</span></a>
+				<a href="{% url 'post:delete_post' post.pk %}" class="p-2"><span class="material-symbols-outlined pointer">delete</span></a>
+			{% endif %}
+			<span class="material-symbols-outlined pointer" class="p-2">comment</span>
+		</section>
+		<section class="post-info">
+			<p><span id="like-count-{{ post.pk }}">{{ post.likes.count }}</span> likes</p>
+			<p class="gray-text">{{ post.date_published.date }}</p>
+		</section>
+		
+		<section class="msg-input d-flex"><textarea id="message-content" placeholder="Add a comment..."></textarea><span class="material-symbols-outlined pointer p-3 pt-2" onclick=SendComment({{post.pk}})>Send</span></section>
+	</article>
 </article>
 
 {% endblock %}
