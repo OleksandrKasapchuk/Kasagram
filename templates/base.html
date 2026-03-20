@@ -65,6 +65,7 @@
 		{% block content %}
 		{% endblock %}
 	</main>
+	{% block scripts %}{% endblock %}
 </body>
 	
 <script>
@@ -99,34 +100,34 @@
 	}
     function toggleFollow(userId) {
 
-    fetch(`/toggle-follow/${userId}`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({ user_id: userId })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
-            const followButton = document.getElementById(`follow-button-${userId}`);
-            const followersCount = document.getElementById('followers-count');
-            const followingCount = document.getElementById('following-count');
+		fetch(`/toggle-follow/${userId}`, {
+			method: 'POST',
+			headers: {
+				'X-CSRFToken': '{{ csrf_token }}',
+				'X-Requested-With': 'XMLHttpRequest',
+			},
+			body: JSON.stringify({ user_id: userId })
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.error) {
+				alert(data.error);
+			} else {
+				const followButton = document.getElementById(`follow-button-${userId}`);
+				const followersCount = document.getElementById('followers-count');
+				const followingCount = document.getElementById('following-count');
 
-            followButton.textContent = data.following ? 'Unfollow' : 'Follow';
-            if (followersCount) {
-                followersCount.textContent = data.followers_count;
-            }
-            if (followingCount) {
-                followingCount.textContent = data.following_count;
-            }
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
+				followButton.textContent = data.following ? 'Unfollow' : 'Follow';
+				if (followersCount) {
+					followersCount.textContent = data.followers_count;
+				}
+				if (followingCount) {
+					followingCount.textContent = data.following_count;
+				}
+			}
+		})
+		.catch(error => console.error('Error:', error));
+	}
 </script>
 </body>
 </html>

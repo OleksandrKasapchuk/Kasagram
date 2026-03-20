@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-
+{% load static %}
 {% block header %}
 <header class="home-header d-flex gap-3">
     <span onclick="filterPosts('for_you')" class="pointer {% if category == 'for_you' %}active {% else %} gray-text {% endif %}">For you</span>
@@ -9,71 +9,14 @@
 {% endblock %}
 
 {% block content %}
-{% load static %}
-{% for post in posts %}
-	<br>
-	<article class="post-container">
-		<section>
-			<article class="post-user-info d-flex">
-				<a href="{% url 'user-info' post.user.pk %}"><img
-					{% if post.user.avatar %}
-							src="{{ post.user.avatar.url }}" 
-					{% else %}
-						src="{% static 'images/default_avatar.jpg' %}"
-					{% endif %}
-					class="profile-avatar" style="width: 36px;height: 36px;"></a>
-				<a href="{% url 'user-info' post.user.pk %}"><h4><b>{{ post.user }}</b></h4></a>
-				<h4 class="gray-text">{{ post.date_published.date }}</h4>
-			</article>
-			<figure>
-				<img src="{{post.media.url}}" class="post-media">
-				<section>
-					<span onclick="likePost({{post.pk}})" class="pointer like-btn {% for like in post.likes.all %}{% if request.user == like.user %}liked{% endif %}{% endfor %}" id="like-btn-{{ post.pk }}">
-						<span class="heart">&hearts;</span> 
-					</span>
-					{% if request.user == post.user %}
-						<a href="{% url 'post:update_post' post.pk %}" class="p-2"><span class="material-symbols-outlined pointer">edit</span></a>
-						<a href="{% url 'post:delete_post' post.pk %}" class="p-2"><span class="material-symbols-outlined pointer">delete</span></a>
-					{% endif %}
-						<a href="{% url 'post:post-details' post.pk %}" class="p-2"><span class="material-symbols-outlined pointer">comment</span></a>
-				</section>
-				<h5><span id="like-count-{{ post.pk }}">{{ post.likes.count }}</span> likes</h5>
-				{% if request.user == post.user %}
-					<figcaption><a href="{% url 'user-info' post.user.pk %}"><b>{{post.user.username}}</b></a> {{ post.content }}</figcaption>
-				{% endif %}
-			</figure>
-		</section>
-		<br>
-	</article>
-{% endfor %}
-<div class="pagination">
-    <span class="step-links">
-        {% if page_obj.has_previous %}
-            <a href="?page=1&category={{ category }}">First</a>
-            <a href="?page={{ posts.previous_page_number }}&category={{ category }}">Previous</a>
-        {% endif %}
 
-        <span class="current">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages|default:"?" }}.
-        </span>
+<article id="post-container">
+	{% include "post_system/post_list.html" %}
+</article>
+<section id="loading" style="display:none;">Завантаження...</section>
 
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&category={{ category }}">Next</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}&category={{ category }}">Last</a>
-        {% endif %}
-    </span>
-</div>
-<script>
-	function filterPosts(category) {
-		const url = new URL(window.location.href);
-		url.searchParams.set('category', category);
-		url.searchParams.delete('page'); // скидаємо сторінку
-		window.location.href = url.toString();
-	}
-	function changeFilter(filter) {
-		const url = new URL(window.location.href);
-		url.searchParams.set('filter', filter);
-		window.location.href = url.toString();
-	}
-</script>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/post_system/navigation.js' %}" defer></script>
+<script src="{% static 'js/post_system/infinite_scroll.js' %}" defer></script>
 {% endblock %}

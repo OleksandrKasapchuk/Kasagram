@@ -1,21 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from .models import *
-from notifications.models import Notification
-from django.views.generic import View, ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
+from django.views.generic import View, ListView, DetailView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from .mixins import *
 from .forms import *
 
 
-from django.core.paginator import Paginator
-
 class Index(ListView):
     model = Post
     context_object_name = "posts"
-    template_name = "post_system/index.html"
     paginate_by = 3  # Обмеження на кількість постів на сторінці
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return ["post_system/post_list.html"]  # Окремий шаблон для шматка постів
+        return ["post_system/index.html"]
 
     def get_queryset(self):
         # Отримуємо категорію з параметрів запиту
