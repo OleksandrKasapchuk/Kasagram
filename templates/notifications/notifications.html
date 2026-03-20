@@ -17,26 +17,10 @@
         <a href="{{ notification.get_url }}">{{ notification.get_message }}, View</a>
     </h4>
 {% endfor %}
+{% endblock %}
+{% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch("{% url 'mark_notifications_as_read' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Сповіщення успішно позначені як прочитані.');
-            } else {
-                console.error('Помилка при позначенні сповіщень як прочитаних:', data.error);
-            }
-        })
-        .catch(error => console.error('Помилка:', error));
-    });
+    window.DjangoConfig.markNotifReadUrl = "{% url 'mark_notifications_as_read' %}";
 </script>
+<script src="{% static 'js/notifications.notifications.js' %}" defer></script>
 {% endblock %}

@@ -12,6 +12,15 @@
 	
 	{% load static %}
 	<link rel="stylesheet" href="{% static 'css/style.css' %}">
+	<script>
+		// Глобальні константи, які можуть знадобитися на будь-якій сторінці
+		window.DjangoConfig = {
+			csrfToken: "{{ csrf_token }}",
+			loginUrl: "{% url 'login' %}",
+			// Можна навіть додати ID поточного користувача, якщо він авторизований
+			userId: "{{ request.user.id|default:'null' }}"
+		};
+	</script>
 </head>
 
 <body class="d-flex flex-column">
@@ -66,68 +75,5 @@
 		{% endblock %}
 	</main>
 	{% block scripts %}{% endblock %}
-</body>
-	
-<script>
-	function likePost(postId) {
-		const likeBtn = document.getElementById('like-btn-' + postId);
-		const likeCount = document.getElementById('like-count-' + postId);
-
-		fetch("{% url 'post:like-post' 0 %}".replace('0', postId), {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': '{{ csrf_token }}'
-			},
-			body: JSON.stringify({})
-		})
-		.then(response => {
-			if (response.status === 403) {
-				window.location.href = '{% url "login" %}';
-				return;
-			}
-			return response.json();
-		})
-		.then(data => {
-			likeCount.textContent = data.likes_count;
-			if (data.liked) {
-				likeBtn.classList.add('liked');
-			} else {
-				likeBtn.classList.remove('liked');
-			}
-		})
-		.catch(error => console.error('Error:', error));
-	}
-    function toggleFollow(userId) {
-
-		fetch(`/toggle-follow/${userId}`, {
-			method: 'POST',
-			headers: {
-				'X-CSRFToken': '{{ csrf_token }}',
-				'X-Requested-With': 'XMLHttpRequest',
-			},
-			body: JSON.stringify({ user_id: userId })
-		})
-		.then(response => response.json())
-		.then(data => {
-			if (data.error) {
-				alert(data.error);
-			} else {
-				const followButton = document.getElementById(`follow-button-${userId}`);
-				const followersCount = document.getElementById('followers-count');
-				const followingCount = document.getElementById('following-count');
-
-				followButton.textContent = data.following ? 'Unfollow' : 'Follow';
-				if (followersCount) {
-					followersCount.textContent = data.followers_count;
-				}
-				if (followingCount) {
-					followingCount.textContent = data.following_count;
-				}
-			}
-		})
-		.catch(error => console.error('Error:', error));
-	}
-</script>
 </body>
 </html>
