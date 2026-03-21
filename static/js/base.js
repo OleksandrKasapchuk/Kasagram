@@ -22,12 +22,36 @@ globalSocket.onmessage = function(e) {
     }
 
     if (data.type === 'new_notification') {
-        const badge = document.getElementById('new-notification-icon');
-        if (data.unread_count === 0) {
-            badge.style.display = 'none'; // Ховаємо бадж, якщо 0
-        } else if (data.unread_count > 0) {
+        const data = JSON.parse(e.data);
+
+        const badge = document.getElementById('unread-count-badge');
+        if (badge && data.unread_count !== undefined) {
             badge.innerText = data.unread_count;
-            badge.style.display = 'inline';
+            badge.style.display = data.unread_count > 0 ? 'flex' : 'none';
         }
-    }
-};
+
+        const list = document.getElementById('notifications-list');
+        if (list && data.actor_name) {
+            injectNewNotification(list, data);
+
+        if (window.location.pathname.includes('/notifications/')) {
+            // Робимо невеличку затримку, щоб юзер встиг побачити, що щось прийшло
+            setTimeout(() => {
+                markAsRead(); // Той самий твій POST запит
+            }, 2000);
+        }
+        }
+}}
+
+function injectNewNotification(container, data) {
+    const newBox = document.createElement('h4');
+    
+    newBox.innerHTML = `
+        <a href="${data.actor_url}">
+            <img src="${data.actor_avatar}" class="sidebar-avatar">
+            ${data.actor_name}
+        </a>
+        <a href="${data.target_url}"> ${data.message}, View</a>
+    `;
+    container.prepend(newBox);
+}

@@ -157,6 +157,10 @@ class GlobalConsumer(AsyncWebsocketConsumer):
     async def notification_message(self, event):
         await self.send(text_data=json.dumps({
             "type": "new_notification",
-            "message": event["message"],
-            "unread_count": event["unread_count"]
+            "message": event.get("message"),
+            "unread_count": event.get("unread_count"),
+            "actor_name": event.get("actor_name"),
+            "actor_url": event.get("actor_url"),
+            "actor_avatar": event.get("actor_avatar"),
+            "target_url": event.get("target_url"),
         }))
