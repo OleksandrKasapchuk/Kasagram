@@ -23,9 +23,11 @@ globalSocket.onmessage = function(e) {
 
     if (data.type === 'new_notification') {
         const badge = document.getElementById('new-notification-icon');
-        if (badge && data.unread_count !== undefined) {
+        if (data.unread_count === 0) {
+            badge.style.display = 'none'; // Ховаємо бадж, якщо 0
+        } else if (data.unread_count > 0) {
             badge.innerText = data.unread_count;
-            badge.style.display = 'inline'; // Показуємо, якщо був прихований
+            badge.style.display = 'inline';
         }
     }
 };
