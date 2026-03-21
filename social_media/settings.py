@@ -59,8 +59,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'cloudinary',
     'django.contrib.staticfiles',
-	'post_system',
+    'core',
 	'auth_system',
+	'post_system',
     'chat',
 	'notifications',
 ]

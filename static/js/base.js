@@ -20,4 +20,12 @@ globalSocket.onmessage = function(e) {
             }
         }
     }
+
+    if (data.type === 'new_notification') {
+        const badge = document.getElementById('new-notification-icon');
+        if (badge && data.unread_count !== undefined) {
+            badge.innerText = data.unread_count;
+            badge.style.display = 'inline'; // Показуємо, якщо був прихований
+        }
+    }
 };
