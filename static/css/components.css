@@ -80,7 +80,6 @@ li > a {
     height: 12px;
     width: 12px;
     border-radius: 50%;
-    display: inline-block;
     border: 2px solid white; /* Біла обводка, щоб гарно виглядало на фоні */
     margin-right: 8px;
     transition: background-color 0.3s ease; /* Плавний перехід кольору */

@@ -13,18 +13,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.room_group_name,self.channel_name)
         await self.accept()
 
-        if self.user.is_authenticated:
-            await self.update_user_online(True)
-            # Розсилаємо всім: "Я в мережі"
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'user_status',
-                    'username': self.user.username,
-                    'online': True
-                }
-            )
-
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
             self.room_group_name,
