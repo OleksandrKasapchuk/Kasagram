@@ -25,9 +25,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Отримання повідомлення від JS
     async def receive(self, text_data):
         data = json.loads(text_data)
-        action = data["action"]
+        action = data.get("action")
 
-        if action == 'delete':
+        if action == 'typing':
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'user_typing',
+                    'username': self.scope['user'].username,
+                    'typing': data['typing']
+                }
+            )
+        elif action == 'delete':
             message_id = data['message_id']
             
             success = await self.delete_message_from_db(message_id)
@@ -70,6 +79,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'delete_message',
             'message_id': event['message_id']
+        }))
+
+    async def user_typing(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'user_typing',
+            'username': event['username'],
+            'typing': event['typing']
         }))
 
     @database_sync_to_async

@@ -5,16 +5,19 @@
 {% block content %}
 {% load static %}
 <article class="chat-container d-flex flex-column">
-    <section class="p-3 mb-1 border-bottom border-secondary">
-        <a href="{% url 'user-info' participant.pk %}"><img
-                {% if participant.avatar %}
-                src="{{ participant.avatar.url }}"
-                {% else %}
-                src="{% static 'images/default_avatar.jpg' %}"
-                {% endif %}
-                class="profile-avatar" style="width: 36px;height: 36px;"></a>
-        <a href="{% url 'user-info' participant.pk %}" class="h2">{{ participant.username }}</a>
-    </section>
+    <article class="d-flex flex-column border-bottom border-secondary mb-1">
+        <section class="px-3 py-2">
+            <a href="{% url 'user-info' participant.pk %}"><img
+                    {% if participant.avatar %}
+                    src="{{ participant.avatar.url }}"
+                    {% else %}
+                    src="{% static 'images/default_avatar.jpg' %}"
+                    {% endif %}
+                    class="profile-avatar" style="width: 36px;height: 36px;"></a>
+            <a href="{% url 'user-info' participant.pk %}" class="h2">{{ participant.username }}</a>
+        </section>
+        <p id="typing-indicator" class="text-info h6 px-3 "></p>
+    </article>
 
     <section id="chat-messages" class="d-flex flex-column">
         {% for message in chat.messages.all %}

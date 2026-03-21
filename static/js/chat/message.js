@@ -9,7 +9,31 @@ function deleteMessage(messageId) {
     }));
 }
 
+let typingTimeout;
+let isCurrentlyTyping = false;
+const messageInput = document.getElementById('message-content');
 
+messageInput.addEventListener('input', () => {
+    if (!isCurrentlyTyping) {
+        isCurrentlyTyping = true;
+        chatSocket.send(JSON.stringify({
+            'action': 'typing',
+            'typing': true
+        }));
+    }
+
+    // Очищаємо старий таймер
+    clearTimeout(typingTimeout);
+
+    // Якщо юзер замовк на 2 секунди — шлемо сигнал "перестав"
+    typingTimeout = setTimeout(() => {
+        chatSocket.send(JSON.stringify({
+            'action': 'typing',
+            'typing': false
+        }));
+        isCurrentlyTyping = false; 
+    }, 2000);
+});
 
 const chatId = window.ChatConfig.chatId;
 const currentUser = window.ChatConfig.currentUser;
@@ -25,7 +49,15 @@ const chatSocket = new WebSocket(
 chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     
-    if (data.type === 'delete_message') {
+    if (data.type === 'user_typing') {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (data.typing && data.username !== currentUser) {
+            typingIndicator.innerText = `${data.username} is typing...`;
+        } else {
+            typingIndicator.innerText = '';
+        }
+        return;
+    } else if (data.type === 'delete_message') {
         const messageDiv = document.getElementById(`message-${data.message_id}`);
         if (messageDiv) messageDiv.remove();
         return;
@@ -51,7 +83,6 @@ chatSocket.onmessage = function(e) {
 
 // 3. Відправка повідомлення
 function SendMessage() {
-    const messageInput = document.getElementById('message-content');
     const content = messageInput.value.trim();
 
     if (content !== "") {
