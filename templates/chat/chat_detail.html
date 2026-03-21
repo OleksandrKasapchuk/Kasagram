@@ -39,7 +39,9 @@
 <script>
     window.ChatConfig = {
         fetchMessagesUrl: "{% url 'chat:get_messages' chat.pk %}",
-        sendMessageUrl: "{% url 'chat:chat_detail' chat.pk %}"
+        sendMessageUrl: "{% url 'chat:chat_detail' chat.pk %}",
+        chatId: "{{ chat.pk }}",
+        currentUser: "{{ request.user.username }}"
     };
 </script>
 <script src="{% static 'js/chat/message.js' %}" defer></script>

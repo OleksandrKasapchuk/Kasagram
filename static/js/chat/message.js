@@ -1,108 +1,76 @@
-const csrf = window.DjangoConfig.csrfToken;
-function SendMessage() {
-    const content = document.getElementById('message-content').value.trim();
-    if (content === '') {
-        alert('Please enter a message.');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('content', content);
-    formData.append('csrfmiddlewaretoken', csrf);
-
-    fetch(window.ChatConfig.sendMessageUrl, {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            const chatMessages = document.getElementById('chat-messages');
-            const newMessage = document.createElement('article');
-            newMessage.classList.add('d-flex', 'mx-3', 'flex-row-reverse');
-            newMessage.id = `message-${data.message_id}`;
-            newMessage.innerHTML = `
-                <p class="message d-flex bg-info mb-1 px-3 py-2 flex-wrap">
-                    ${data.content}
-                </p>
-                <a href="javascript:void(0);" class="p-2 delete-btn" onclick="deleteMessage(${data.message_id})"><span class="material-symbols-outlined pointer">delete</span></a>
-            `;
-            chatMessages.appendChild(newMessage);
-            document.getElementById('message-content').value = '';
-        } else {
-            alert('Error sending message: ' + (data.error || 'Unknown error'));
-        }
-    })
-    .catch(error => console.error('Error:', error));
-};
 
 function deleteMessage(messageId) {
     if (!confirm('Are you sure you want to delete this message?')) {
         return;
     }
-
-    fetch(`/chat/delete-message/${messageId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrf
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById(`message-${messageId}`).remove();
-        } else {
-            alert('Error deleting message: ' + (data.error || 'Unknown error'));
-        }
-    })
-    .catch(error => console.error('Error:', error));
+    chatSocket.send(JSON.stringify({
+        'action': 'delete',
+        'message_id': messageId
+    }));
 }
 
-function fetchMessages() {
+
+
+const chatId = window.ChatConfig.chatId;
+const currentUser = window.ChatConfig.currentUser;
+
+// 1. Створюємо підключення
+const chatSocket = new WebSocket(
+    (window.location.protocol === 'https:' ? 'wss://' : 'ws://') 
+    + window.location.host 
+    + '/ws/chat/' + chatId + '/'
+);
+
+// 2. Отримання повідомлення
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    
+    if (data.type === 'delete_message') {
+        const messageDiv = document.getElementById(`message-${data.message_id}`);
+        if (messageDiv) messageDiv.remove();
+        return;
+    }
     const chatMessages = document.getElementById('chat-messages');
-    fetch(window.ChatConfig.fetchMessagesUrl, {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        chatMessages.innerHTML = '';
-        data.messages.forEach(message => {
-            const newMessage = document.createElement('article');
-            newMessage.classList.add('d-flex', 'mx-3');
-            newMessage.id = `message-${message.id}`;
-            if (message.is_user_message) {
-                newMessage.classList.add('flex-row-reverse');
-            }
-            newMessage.innerHTML = `
-                <p class="message d-flex px-3 py-2 ${message.is_user_message ? 'bg-info' : ''}">
-                    ${message.content}
-                </p>
-                ${message.is_user_message ? `  <span onclick="deleteMessage(${message.id})" class="material-symbols-outlined pointer p-3 delete-btn">delete</span>` : ''}
-            `;
-            chatMessages.appendChild(newMessage);
-        });
-    })
-    .catch(error => console.error('Error:', error));
-}
-// Fetch messages every 5 seconds
-setInterval(fetchMessages, 5000);
+    
+    const isMe = data.username === currentUser;
+    
+    const messageHtml = `
+        <article class="d-flex mx-3 ${isMe ? 'flex-row-reverse' : ''}" id="message-temp">
+            <p class="message mb-1 px-3 py-2 d-flex flex-wrap ${isMe ? 'bg-info' : ''}">
+                ${data.message}
+            </p>
+            ${isMe ? `<span class="material-symbols-outlined pointer p-2 delete-btn">delete</span>` : ''}
+        </article>
+    `;
+    
+    chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+    
+    // Автоматичний скрол вниз
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+};
 
-// Initial fetch
-fetchMessages();
+// 3. Відправка повідомлення
+function SendMessage() {
+    const messageInput = document.getElementById('message-content');
+    const content = messageInput.value.trim();
+
+    if (content !== "") {
+        chatSocket.send(JSON.stringify({
+            'message': content,
+            'username': currentUser
+        }));
+        messageInput.value = '';
+    }
+}
+
+// Обробка натискання Enter (без Shift)
+document.getElementById('message-content').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        SendMessage();
+    }
+});
+
+chatSocket.onclose = function(e) {
+    console.error('Chat socket closed unexpectedly');
+};
