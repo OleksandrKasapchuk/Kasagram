@@ -6,14 +6,17 @@
 {% load static %}
 <article class="chat-container d-flex flex-column">
     <article class="d-flex flex-column border-bottom border-secondary mb-1">
-        <section class="px-3 py-2">
+        <section class="px-3 py-2 d-flex align-items-center">
+            <span id="status-{{ participant.username }}" 
+                            class="status-dot m-2 {% if participant.is_online %}online{% else %}offline{% endif %}">
+            </span>
             <a href="{% url 'user-info' participant.pk %}"><img
                     {% if participant.avatar %}
                     src="{{ participant.avatar.url }}"
                     {% else %}
                     src="{% static 'images/default_avatar.jpg' %}"
                     {% endif %}
-                    class="profile-avatar" style="width: 36px;height: 36px;"></a>
+                    class="profile-avatar me-2" style="width: 36px;height: 36px;"></a>
             <a href="{% url 'user-info' participant.pk %}" class="h2">{{ participant.username }}</a>
         </section>
         <p id="typing-indicator" class="text-info h6 px-3 "></p>
