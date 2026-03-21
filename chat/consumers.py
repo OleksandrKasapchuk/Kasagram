@@ -1,20 +1,29 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from .models import Message, Chat # Перевір назви своїх моделей
+from .models import Message, Chat
 from auth_system.models import CustomUser
-
+from django.utils import timezone
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = f'chat_{self.room_name}'
 
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
+        await self.channel_layer.group_add(self.room_group_name,self.channel_name)
         await self.accept()
+
+        if self.user.is_authenticated:
+            await self.update_user_online(True)
+            # Розсилаємо всім: "Я в мережі"
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'user_status',
+                    'username': self.user.username,
+                    'online': True
+                }
+            )
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
@@ -104,3 +113,54 @@ class ChatConsumer(AsyncWebsocketConsumer):
         chat = Chat.objects.get(id=chat_id)
         msg = Message.objects.create(user=user,chat=chat,content=message)
         return msg.id
+
+
+class GlobalConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope['user']
+        if self.user.is_authenticated:
+            self.user_group = f"user_global_{self.user.id}"
+            
+            # Додаємо юзера в його персональну групу для нотіфікацій
+            await self.channel_layer.group_add(self.user_group, self.channel_name)
+            
+            # Додаємо в загальну групу "всіх", щоб бачити статуси інших
+            await self.channel_layer.group_add("global_presence", self.channel_name)
+            
+            await self.accept()
+            
+            # Оновлюємо статус в БД
+            await self.update_user_online(True)
+            
+            # Розсилаємо всім: "Юзер X зайшов на сайт"
+            await self.channel_layer.group_send(
+                "global_presence",
+                {
+                    'type': 'user_status_change',
+                    'username': self.user.username,
+                    'is_online': True
+                }
+            )
+
+    async def disconnect(self, close_code):
+        if self.user.is_authenticated:
+            await self.update_user_online(False)
+            
+            await self.channel_layer.group_send(
+                "global_presence",
+                {
+                    'type': 'user_status_change',
+                    'username': self.user.username,
+                    'is_online': False
+                }
+            )
+            await self.channel_layer.group_discard(self.user_group, self.channel_name)
+            await self.channel_layer.group_discard("global_presence", self.channel_name)
+
+    async def user_status_change(self, event):
+        # Відправляємо інфу про зміну статусу на фронтенд/апку
+        await self.send(text_data=json.dumps(event))
+
+    @database_sync_to_async
+    def update_user_online(self, status):
+        CustomUser.objects.filter(pk=self.user.pk).update(is_online=status, last_seen=timezone.now())

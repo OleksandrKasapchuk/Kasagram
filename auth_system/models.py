@@ -1,13 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
-	bio = models.TextField(null=True, blank=True)
-	avatar = CloudinaryField("image")
-
-	def __str__(self):
-		return self.username
+    bio = models.TextField(null=True, blank=True)
+    avatar = CloudinaryField("image")
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(default=timezone.now)
+    def __str__(self):
+        return self.username
     
 
 class Subscription(models.Model):

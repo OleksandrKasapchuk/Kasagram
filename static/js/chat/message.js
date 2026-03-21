@@ -67,7 +67,7 @@ chatSocket.onmessage = function(e) {
     const isMe = data.username === currentUser;
     
     const messageHtml = `
-        <article class="d-flex mx-3 ${isMe ? 'flex-row-reverse' : ''}" id="message-temp">
+        <article class="d-flex mx-3 ${isMe ? 'flex-row-reverse' : ''}" id="message-${data.message_id}">
             <p class="message mb-1 px-3 py-2 d-flex flex-wrap ${isMe ? 'bg-info' : ''}">
                 ${data.message}
             </p>

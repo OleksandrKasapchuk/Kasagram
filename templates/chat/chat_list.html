@@ -1,17 +1,20 @@
 {% extends 'base.html' %}
 
 {% block title %}Chats{% endblock %}
+{% load static %}
 
 {% block content %}
     <article class="d-flex flex-column">
         <h2>Your Chats</h2>
         <ul>
             {% for item in chat_participants %}
-                <li class="h4">
-                    {% load static %}
+                <li class="h4 d-flex">
+                    <span id="status-{{ item.participant.username }}" 
+                            class="status-dot {% if item.participant.is_online %}online{% else %}offline{% endif %}">
+                        </span>
                     <a href="{% url 'chat:chat_detail' item.chat.pk %}">
-                    <img src="{% if item.participant.avatar %}{{ item.participant.avatar.url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" class="sidebar-avatar">
-                        Chat with {{ item.participant.username }}
+                        <img src="{% if item.participant.avatar %}{{ item.participant.avatar.url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" class="sidebar-avatar">
+                        {{ item.participant.username }}
                     </a>
                 </li>
             {% endfor %}
