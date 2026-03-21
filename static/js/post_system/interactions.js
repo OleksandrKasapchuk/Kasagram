@@ -4,7 +4,7 @@ function likePost(postId) {
     const likeBtn = document.getElementById('like-btn-' + postId);
     const likeCount = document.getElementById('like-count-' + postId);
 
-    fetch(`/like/${postId}/`, {
+    fetch(`/like/${postId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ function likePost(postId) {
 		fetch(`/toggle-follow/${userId}`, {
 			method: 'POST',
 			headers: {
-				'X-CSRFToken': '{{ csrf_token }}',
+				'X-CSRFToken': window.DjangoConfig.csrfToken,
 				'X-Requested-With': 'XMLHttpRequest',
 			},
 			body: JSON.stringify({ user_id: userId })
