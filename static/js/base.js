@@ -10,16 +10,30 @@ globalSocket.onmessage = function(e) {
     if (data.type === 'user_status_change') {
         // Шукаємо крапку статусу саме цього юзера за ID або username
         const statusDot = document.getElementById(`status-${data.username}`);
-        if (statusDot) {
-            if (data.is_online) {
+        const lastSeen = document.getElementById(`last-seen-${data.username}`)
+        
+        
+        
+        if (data.is_online) {
+            if (statusDot) {
                 statusDot.classList.add('online');
                 statusDot.classList.remove('offline');
-            } else {
+            }
+            if (lastSeen) {
+               
+                lastSeen.style.display = 'none'
+            }
+        } else {
+            if (statusDot) {
                 statusDot.classList.add('offline');
                 statusDot.classList.remove('online');
             }
+            if (lastSeen) {
+                lastSeen.style.display = 'block'
+            }
         }
     }
+    
 
     if (data.type === 'new_notification') {
 
@@ -36,7 +50,7 @@ globalSocket.onmessage = function(e) {
             if (window.location.pathname.includes('/notifications/')) {
                 // Робимо невеличку затримку, щоб юзер встиг побачити, що щось прийшло
                 setTimeout(() => {
-                    markAsRead(); // Той самий твій POST запит
+                    markAsRead();
                 }, 2000);
             }
         }

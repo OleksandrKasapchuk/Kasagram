@@ -25,3 +25,51 @@
     word-break: break-word;  /* Додаткова страховка для дуже довгих слів */
 }
 
+/* Контейнер повідомлення */
+.message-wrapper {
+    max-width: 70%;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Мої повідомлення (праві) */
+.message-wrapper.sent {
+    background-color: #5bc0de; /* твій bg-info */
+    color: white;
+    border-bottom-right-radius: 4px; /* гострий кутик */
+}
+
+/* Чужі повідомлення (ліві) */
+.message-wrapper.received {
+    background-color: #333;
+    color: #efefef;
+    border-bottom-left-radius: 4px;
+}
+
+/* Контент повідомлення */
+.message-content {
+    word-wrap: break-word;
+    padding-bottom: 12px !important; /* Місце під іконку знизу */
+}
+
+/* Простір, щоб текст не перекривав галочку */
+.status-spacer {
+    display: inline-block;
+    width: 20px;
+}
+
+/* Блок з іконкою в правому нижньому куті */
+.message-status {
+    position: absolute;
+    right: 8px;
+    bottom: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.message-status .material-symbols-outlined {
+    font-size: 14px !important;
+    opacity: 0.8;
+}
