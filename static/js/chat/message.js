@@ -12,7 +12,7 @@ let isCurrentlyTyping = false;
 const messageInput = document.getElementById('message-content');
 
 chatSocket.onopen = function(e) {
-    console.log("Connected to chat!");
+    console.log("Connected to chat! " + currentUser);
     chatSocket.send(JSON.stringify({
         'action': 'mark_as_read'
     }));
@@ -52,11 +52,11 @@ messageInput.addEventListener('input', () => {
 });
 
 
-// 2. Отримання повідомлення
 chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
-
-    const isMe = data.username === currentUser;
+    
+    // Пріоритет на is_me від сервера, якщо немає - порівнюємо по старінці
+    const isMe = data.is_me !== undefined ? data.is_me : (data.username === currentUser);
 
     if (data.type === 'user_typing') {
         const typingIndicator = document.getElementById('typing-indicator');
@@ -66,22 +66,28 @@ chatSocket.onmessage = function(e) {
             typingIndicator.innerText = '';
         }
         return;
-    } else if (data.type === 'delete_message') {
+    } 
+    
+    if (data.type === 'delete_message') {
         const messageDiv = document.getElementById(`message-${data.message_id}`);
         if (messageDiv) messageDiv.remove();
         return;
-    } else if (data.type === 'messages_read') {
-        if (!isMe){
-            document.querySelectorAll('.material-symbols-outlined').forEach(el => {
-            if (el.innerText === 'check') {
-                el.innerText = 'done_all';
-                el.style.color = '#3498db'; // синій колір прочитаного
-            }
-        });
-        return;
+    } 
+    
+    if (data.type === 'messages_read') {
+        // Синіють тільки ЯКЩО прочитав ІНШИЙ (не я)
+        if (!isMe) {
+            document.querySelectorAll('.message-status .material-symbols-outlined').forEach(el => {
+                if (el.innerText.trim() === 'check') {
+                    el.innerText = 'done_all';
+                    el.style.color = '#3498db';
+                }
+            });
         }
+        return;
     }
-    // 2. Створення повідомлення за новим стилем
+
+    // 2. Логіка відображення повідомлення (якщо прийшло нове повідомлення)
     if (data.message) {
         const chatMessages = document.getElementById('chat-messages');
         
@@ -97,14 +103,12 @@ chatSocket.onmessage = function(e) {
                         ${data.message}
                         <span class="status-spacer"></span> 
                     </div>
-
                     ${isMe ? `
                         <div class="message-status">
                             <span class="material-symbols-outlined">check</span>
                         </div>
                     ` : ''}
                 </div>
-                
                 ${isMe ? `
                     <span onclick="deleteMessage(${data.message_id})" 
                           class="material-symbols-outlined pointer p-2 delete-btn align-self-center">

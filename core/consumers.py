@@ -33,7 +33,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {
                     'type': 'messages_read_update',
-                    'reader_username': self.scope['user'].username,
+                    'username': self.scope['user'].username,
                 }
             )
         elif action == 'typing':
@@ -77,11 +77,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Обробка отриманого повідомлення групою
     async def chat_message(self, event):
+        is_me = self.scope['user'].username == event['username']
         # Надсилаємо назад на фронтенд (в браузер)
         await self.send(text_data=json.dumps({
             'message': event['message'],
             'username': event['username'],
-            'message_id': event['message_id']
+            'message_id': event['message_id'],
+            'is_me': is_me
         }))
     
     # Обробник події видалення для групи
@@ -116,10 +118,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return msg.id
     
     async def messages_read_update(self, event):
+        is_me = self.scope['user'].username == event['username']
+    
         # Відправляємо клієнту сигнал, щоб JS оновив галочки
         await self.send(text_data=json.dumps({
             'type': 'messages_read',
-            'reader_username': event['reader_username']
+            'username': event['username'],
+            'is_me': is_me
         }))
     
     @database_sync_to_async

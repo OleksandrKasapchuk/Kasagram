@@ -37,7 +37,7 @@
 
                     {% if request.user == message.user %}
                         <div class="message-status">
-                            <span class="material-symbols-outlined">
+                            <span class="material-symbols-outlined" {% if message.is_read %}style="color: #3498db" {% endif %}>
                                 {% if message.is_read %}done_all{% else %}check{% endif %}
                             </span>
                         </div>
