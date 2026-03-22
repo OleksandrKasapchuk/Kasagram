@@ -71,7 +71,7 @@ chatSocket.onmessage = function(e) {
             <p class="message mb-1 px-3 py-2 d-flex flex-wrap ${isMe ? 'bg-info' : ''}">
                 ${data.message}
             </p>
-            ${isMe ? `<span onclick="deleteMessage(${message_id})" class="material-symbols-outlined pointer p-2 delete-btn">delete</span>` : ''}
+            ${isMe ? `<span onclick="deleteMessage(${data.message_id})" class="material-symbols-outlined pointer p-2 delete-btn">delete</span>` : ''}
         </article>
     `;
     

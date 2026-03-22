@@ -23,7 +23,7 @@
 							<section class="d-flex">
 								<a href="{% url 'user-info' comment.user.pk %}">
 									<img 
-									{% if notification.actor.avatar %}
+									{% if comment.user.avatar %}
 										src="{{ comment.user.avatar.url }}"
 									{% else %}
 										src="{% static 'images/default_avatar.jpg' %}" 
