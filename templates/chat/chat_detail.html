@@ -4,9 +4,10 @@
 
 {% block content %}
 {% load static %}
+{% load humanize %}
 <article class="chat-container d-flex flex-column">
-    <article class="d-flex flex-column border-bottom border-secondary mb-1">
-        <section class="px-3 py-2 d-flex align-items-center">
+    <article class="px-3 d-flex flex-column border-bottom border-secondary mb-1">
+        <section class=" pt-2 d-flex align-items-center">
             <span id="status-{{ participant.username }}" 
                             class="status-dot m-2 {% if participant.is_online %}online{% else %}offline{% endif %}">
             </span>
@@ -19,17 +20,31 @@
                     class="profile-avatar me-2" style="width: 36px;height: 36px;"></a>
             <a href="{% url 'user-info' participant.pk %}" class="h2">{{ participant.username }}</a>
         </section>
-        <p id="typing-indicator" class="text-info h6 px-3 "></p>
+        <section class="d-flex flex-column px-2">
+             <p class="text-secondary" id="last-seen-{{ participant.username }}">{% if not participant.is_online %}  last seen {{ participant.last_seen|naturaltime }} {% endif %}</p> 
+            <p id="typing-indicator" class="text-info h6 "></p>
+        </section>
     </article>
 
     <section id="chat-messages" class="d-flex flex-column">
         {% for message in chat.messages.all %}
-            <article class="d-flex mx-3 {% if request.user == message.user %}flex-row-reverse{% endif %}" id="message-{{ message.pk }}">
-                <p class="message mb-1 px-3 py-2 d-flex flex-wrap {% if request.user == message.user %}bg-info{% endif %}">
-                    {{ message.content }}
-                </p>
+            <article class="d-flex mx-3 mb-2 {% if request.user == message.user %}flex-row-reverse{% else %}flex-row{% endif %}" id="message-{{ message.pk }}">
+                <div class="message-wrapper position-relative {% if request.user == message.user %}sent{% else %}received{% endif %}">
+                    <div class="message-content px-3 py-2">
+                        {{ message.content }}
+                        <span class="status-spacer"></span> 
+                    </div>
+
+                    {% if request.user == message.user %}
+                        <div class="message-status">
+                            <span class="material-symbols-outlined">
+                                {% if message.is_read %}done_all{% else %}check{% endif %}
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
                 {% if request.user == message.user %}
-                    <span onclick="deleteMessage({{message.pk}})" class="material-symbols-outlined pointer p-2 delete-btn">delete</span>
+                    <span onclick="deleteMessage({{message.pk}})" class="material-symbols-outlined pointer p-2 delete-btn align-self-center">delete</span>
                 {% endif %}
             </article>
         {% endfor %}

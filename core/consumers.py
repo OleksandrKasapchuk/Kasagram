@@ -4,7 +4,7 @@ from channels.db import database_sync_to_async
 from chat.models import Message, Chat
 from auth_system.models import CustomUser
 from django.utils import timezone
-
+from django.contrib.humanize.templatetags.humanize import naturaltime
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -25,7 +25,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get("action")
 
-        if action == 'typing':
+
+        if action == 'mark_as_read':
+            await self.mark_messages_as_read()
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'messages_read_update',
+                    'reader_username': self.scope['user'].username,
+                }
+            )
+        elif action == 'typing':
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -48,7 +59,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         'message_id': message_id
                     }
                 )
-        else:
+        elif 'message' in data:
+        
             message_text = data['message']
             username = data['username']
             msg_obj_id = await self.save_message(username, self.room_name, message_text)
@@ -59,7 +71,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'type': 'chat_message',
                     'message': message_text,
                     'username': username,
-                    'message_id': msg_obj_id # Передаємо ID, щоб потім можна було видалити
+                    'message_id': msg_obj_id
                 }
             )
 
@@ -102,6 +114,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         chat = Chat.objects.get(id=chat_id)
         msg = Message.objects.create(user=user,chat=chat,content=message)
         return msg.id
+    
+    async def messages_read_update(self, event):
+        # Відправляємо клієнту сигнал, щоб JS оновив галочки
+        await self.send(text_data=json.dumps({
+            'type': 'messages_read',
+            'reader_username': event['reader_username']
+        }))
+    
+    @database_sync_to_async
+    def mark_messages_as_read(self):
+        Message.objects.filter(
+            chat_id=self.room_name,
+            is_read=False).exclude(user=self.scope['user']).update(is_read=True)
 
 
 class GlobalConsumer(AsyncWebsocketConsumer):
@@ -134,13 +159,16 @@ class GlobalConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         if self.user.is_authenticated:
             await self.update_user_online(False)
-            
+            now = timezone.now()
+            readable_time = str(naturaltime(now))
+
             await self.channel_layer.group_send(
                 "global_presence",
                 {
                     'type': 'user_status_change',
                     'username': self.user.username,
-                    'is_online': False
+                    'is_online': False,
+                    'last_seen': readable_time
                 }
             )
             await self.channel_layer.group_discard(self.user_group, self.channel_name)

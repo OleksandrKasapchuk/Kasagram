@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'cloudinary',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'core',
 	'auth_system',
 	'post_system',
@@ -105,6 +106,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
+
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -149,7 +151,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Berlin' 
 
 USE_I18N = True
 

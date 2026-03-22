@@ -1,3 +1,22 @@
+const chatId = window.ChatConfig.chatId;
+const currentUser = window.ChatConfig.currentUser;
+
+// 1. Створюємо підключення
+const chatSocket = new WebSocket(
+    (window.location.protocol === 'https:' ? 'wss://' : 'ws://') 
+    + window.location.host 
+    + '/ws/chat/' + chatId + '/'
+);
+let typingTimeout;
+let isCurrentlyTyping = false;
+const messageInput = document.getElementById('message-content');
+
+chatSocket.onopen = function(e) {
+    console.log("Connected to chat!");
+    chatSocket.send(JSON.stringify({
+        'action': 'mark_as_read'
+    }));
+};
 
 function deleteMessage(messageId) {
     if (!confirm('Are you sure you want to delete this message?')) {
@@ -9,9 +28,6 @@ function deleteMessage(messageId) {
     }));
 }
 
-let typingTimeout;
-let isCurrentlyTyping = false;
-const messageInput = document.getElementById('message-content');
 
 messageInput.addEventListener('input', () => {
     if (!isCurrentlyTyping) {
@@ -35,23 +51,16 @@ messageInput.addEventListener('input', () => {
     }, 2000);
 });
 
-const chatId = window.ChatConfig.chatId;
-const currentUser = window.ChatConfig.currentUser;
-
-// 1. Створюємо підключення
-const chatSocket = new WebSocket(
-    (window.location.protocol === 'https:' ? 'wss://' : 'ws://') 
-    + window.location.host 
-    + '/ws/chat/' + chatId + '/'
-);
 
 // 2. Отримання повідомлення
 chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
-    
+
+    const isMe = data.username === currentUser;
+
     if (data.type === 'user_typing') {
         const typingIndicator = document.getElementById('typing-indicator');
-        if (data.typing && data.username !== currentUser) {
+        if (data.typing && !isMe) {
             typingIndicator.innerText = `${data.username} is typing...`;
         } else {
             typingIndicator.innerText = '';
@@ -61,24 +70,53 @@ chatSocket.onmessage = function(e) {
         const messageDiv = document.getElementById(`message-${data.message_id}`);
         if (messageDiv) messageDiv.remove();
         return;
+    } else if (data.type === 'messages_read') {
+        if (!isMe){
+            document.querySelectorAll('.material-symbols-outlined').forEach(el => {
+            if (el.innerText === 'check') {
+                el.innerText = 'done_all';
+                el.style.color = '#3498db'; // синій колір прочитаного
+            }
+        });
+        return;
+        }
     }
-    const chatMessages = document.getElementById('chat-messages');
-    
-    const isMe = data.username === currentUser;
-    
-    const messageHtml = `
-        <article class="d-flex mx-3 ${isMe ? 'flex-row-reverse' : ''}" id="message-${data.message_id}">
-            <p class="message mb-1 px-3 py-2 d-flex flex-wrap ${isMe ? 'bg-info' : ''}">
-                ${data.message}
-            </p>
-            ${isMe ? `<span onclick="deleteMessage(${data.message_id})" class="material-symbols-outlined pointer p-2 delete-btn">delete</span>` : ''}
-        </article>
-    `;
-    
-    chatMessages.insertAdjacentHTML('beforeend', messageHtml);
-    
-    // Автоматичний скрол вниз
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    // 2. Створення повідомлення за новим стилем
+    if (data.message) {
+        const chatMessages = document.getElementById('chat-messages');
+        
+        // Якщо повідомлення від іншого — шлемо сигнал "прочитано"
+        if (!isMe) {
+            chatSocket.send(JSON.stringify({ 'action': 'mark_as_read' }));
+        }
+
+        const messageHtml = `
+            <article class="d-flex mx-3 mb-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}" id="message-${data.message_id}">
+                <div class="message-wrapper position-relative ${isMe ? 'sent' : 'received'}">
+                    <div class="message-content px-3 py-2">
+                        ${data.message}
+                        <span class="status-spacer"></span> 
+                    </div>
+
+                    ${isMe ? `
+                        <div class="message-status">
+                            <span class="material-symbols-outlined">check</span>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                ${isMe ? `
+                    <span onclick="deleteMessage(${data.message_id})" 
+                          class="material-symbols-outlined pointer p-2 delete-btn align-self-center">
+                        delete
+                    </span>
+                ` : ''}
+            </article>
+        `;
+
+        chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 };
 
 function SendMessage() {
