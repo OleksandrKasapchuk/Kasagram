@@ -32,17 +32,19 @@
                 
             </article>
         </section>
-        
-            <h2>User posts:</h2>
-            <section class="row">
-                {% for post in user.posts.all %}
-                <div class="col-md-4 profile-post-container">
-                    <img src="{{ post.media.url }}"  class="profile-post-media">
-                    <a class="post-hover-info" href="{% url 'post:post-details' post.pk %}"><span><span class="heart">&hearts;</span> {{post.likes.count}}</span> <span><span class="material-symbols-outlined pointer">comment</span>{{post.comments.count}}</span></a>
-                </div>
-                {% endfor %}
-            </section>
-    
+        <h2>User posts:</h2>
+        <section class="row">
+            {% for post in user.posts.all %}
+            <div class="col-md-4 profile-post-container">
+                <img src="{{ post.media.url }}"  class="profile-post-media">
+                <a class="post-hover-info" href="{% url 'post:post-details' post.pk %}"><span><span class="heart">&hearts;</span> {{post.likes.count}}</span> <span><span class="material-symbols-outlined pointer">comment</span>{{post.comments.count}}</span></a>
+            </div>
+            {% endfor %}
+        </section>
     </article>
 </article>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/post_system/interactions.js' %}"></script>
 {% endblock %}

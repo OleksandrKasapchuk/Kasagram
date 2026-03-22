@@ -1,9 +1,10 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from .models import Message, Chat
+from chat.models import Message, Chat
 from auth_system.models import CustomUser
 from django.utils import timezone
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -152,3 +153,14 @@ class GlobalConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def update_user_online(self, status):
         CustomUser.objects.filter(pk=self.user.pk).update(is_online=status, last_seen=timezone.now())
+    
+    async def notification_message(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "new_notification",
+            "message": event.get("message"),
+            "unread_count": event.get("unread_count"),
+            "actor_name": event.get("actor_name"),
+            "actor_url": event.get("actor_url"),
+            "actor_avatar": event.get("actor_avatar"),
+            "target_url": event.get("target_url"),
+        }))

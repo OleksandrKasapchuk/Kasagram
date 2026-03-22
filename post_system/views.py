@@ -60,7 +60,7 @@ class PostDetailView(DetailView):
 					'date_published': comment.date_published,
 					'user_url': reverse_lazy('user-info', kwargs={"pk":comment.user.pk}),
 					'update_url': reverse_lazy('post:update-comment', kwargs={"pk":comment.pk}),
-					'delete_url': reverse_lazy('post:delete-comment', kwargs={"pk":comment.pk}),
+                    'commentId': comment.pk,
 				})
 			return redirect('post:post_details', pk=post.pk)
 		except Exception as e:

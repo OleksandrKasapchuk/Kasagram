@@ -27,6 +27,7 @@ function SendComment(postId) {
         if (data.success) {
             const postComments = document.getElementById('comments');
             const newComment = document.createElement('li');
+            newComment.id = `comment-${data.commentId}`;
             newComment.classList.add('comment-container', 'mt-3', 'd-flex');
             newComment.innerHTML = `
                 <section class="d-flex flex-column">
@@ -37,8 +38,8 @@ function SendComment(postId) {
                     <p class="gray-text">${data.date_published}</p>
                 </section>
                 <section>
-                    <a href="${data.update_url}/"><span class="material-symbols-outlined pointer">edit</span></a>
-                    <a href="${data.delete_url}/"><span class="material-symbols-outlined pointer">delete</span></a>
+                    <a href="${data.update_url}"><span class="material-symbols-outlined pointer">edit</span></a>
+                    <span onclick="deleteComment(${data.commentId})" class="material-symbols-outlined pointer">delete</span>
                 </section>
             `;
             postComments.appendChild(newComment);

@@ -3,24 +3,26 @@
 {% block content %}
 {% load static %}
 <h1>Notifications</h1>
-{% for notification in notifications %}
-    <h4>
-        <a href="{% url 'user-info' notification.actor.pk %}">
-        <img 
-        {% if notification.actor.avatar %}
-            src="{{ notification.actor.avatar.url }}"
-        {% else %}
-            src="{% static 'images/default_avatar.jpg' %}" 
-        {% endif %} class="sidebar-avatar">
-        {{ notification.actor }}
-        </a>
-        <a href="{{ notification.get_url }}">{{ notification.get_message }}, View</a>
-    </h4>
-{% endfor %}
-{% endblock %}
+<article id="notifications-list">
+    {% for notification in notifications %}
+        <h4>
+            <a href="{% url 'user-info' notification.actor.pk %}">
+            <img 
+            {% if notification.actor.avatar %}
+                src="{{ notification.actor.avatar.url }}"
+            {% else %}
+                src="{% static 'images/default_avatar.jpg' %}" 
+            {% endif %} class="sidebar-avatar">
+            {{ notification.actor }}
+            </a>
+            <a href="{{ notification.get_url }}">{{ notification.get_message }}, View</a>
+        </h4>
+    {% endfor %}
+    {% endblock %}
+</p>
 {% block scripts %}
 <script>
     window.DjangoConfig.markNotifReadUrl = "{% url 'mark_notifications_as_read' %}";
 </script>
-<script src="{% static 'js/notifications.notifications.js' %}" defer></script>
+<script src="{% static 'js/notifications/notifications.js' %}" defer></script>
 {% endblock %}

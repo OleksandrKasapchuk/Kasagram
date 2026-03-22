@@ -20,4 +20,38 @@ globalSocket.onmessage = function(e) {
             }
         }
     }
-};
+
+    if (data.type === 'new_notification') {
+
+        const badge = document.getElementById('new-notification-icon');
+        if (badge) {
+            badge.innerText = data.unread_count;
+            badge.style.display = data.unread_count > 0 ? 'inline' : 'none';
+        }
+
+        const list = document.getElementById('notifications-list');
+        if (list && data.actor_name) {
+            injectNewNotification(list, data);
+
+            if (window.location.pathname.includes('/notifications/')) {
+                // Робимо невеличку затримку, щоб юзер встиг побачити, що щось прийшло
+                setTimeout(() => {
+                    markAsRead(); // Той самий твій POST запит
+                }, 2000);
+            }
+        }
+    }
+}
+
+function injectNewNotification(container, data) {
+    const newBox = document.createElement('h4');
+    
+    newBox.innerHTML = `
+        <a href="${data.actor_url}">
+            <img src="${data.actor_avatar}" class="sidebar-avatar">
+            ${data.actor_name}
+        </a>
+        <a href="${data.target_url}"> ${data.message}, View</a>
+    `;
+    container.prepend(newBox);
+}

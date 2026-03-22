@@ -29,33 +29,34 @@ function likePost(postId) {
     })
     .catch(error => console.error('Error:', error));
 }
-    function toggleFollow(userId) {
 
-		fetch(`/toggle-follow/${userId}`, {
-			method: 'POST',
-			headers: {
-				'X-CSRFToken': window.DjangoConfig.csrfToken,
-				'X-Requested-With': 'XMLHttpRequest',
-			},
-			body: JSON.stringify({ user_id: userId })
-		})
-		.then(response => response.json())
-		.then(data => {
-			if (data.error) {
-				alert(data.error);
-			} else {
-				const followButton = document.getElementById(`follow-button-${userId}`);
-				const followersCount = document.getElementById('followers-count');
-				const followingCount = document.getElementById('following-count');
+function toggleFollow(userId) {
 
-				followButton.textContent = data.following ? 'Unfollow' : 'Follow';
-				if (followersCount) {
-					followersCount.textContent = data.followers_count;
-				}
-				if (followingCount) {
-					followingCount.textContent = data.following_count;
-				}
-			}
-		})
-		.catch(error => console.error('Error:', error));
-	}
+    fetch(`/toggle-follow/${userId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': window.DjangoConfig.csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ user_id: userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            const followButton = document.getElementById(`follow-button-${userId}`);
+            const followersCount = document.getElementById('followers-count');
+            const followingCount = document.getElementById('following-count');
+
+            followButton.textContent = data.following ? 'Unfollow' : 'Follow';
+            if (followersCount) {
+                followersCount.textContent = data.followers_count;
+            }
+            if (followingCount) {
+                followingCount.textContent = data.following_count;
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}

@@ -54,9 +54,7 @@
 					<a href="{% url 'notifications' request.user.pk %}">
 						<span class="material-symbols-outlined">notifications</span>
 						<span class="sidebar-text">Notifications</span>
-						{% if unread_notification_count > 0 %}
-							<span class="new-notification-icon">{{ unread_notification_count }}</span>
-						{% endif %}
+						<span class="new-notification-icon" id="new-notification-icon" style="display: {% if unread_notification_count > 0 %}inline{% else %}none{% endif %};">{{ unread_notification_count }}</span>
 					</a>
 				</li>
 				<li class="sidebar-item {% if request.resolver_match.url_name == 'user-info' and request.user == user %}active{% endif %}">
