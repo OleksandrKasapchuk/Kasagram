@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'cloudinary',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'core',
 	'auth_system',
 	'post_system',

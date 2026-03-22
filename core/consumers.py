@@ -4,7 +4,7 @@ from channels.db import database_sync_to_async
 from chat.models import Message, Chat
 from auth_system.models import CustomUser
 from django.utils import timezone
-
+from django.contrib.humanize.templatetags.humanize import naturaltime
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -134,13 +134,16 @@ class GlobalConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         if self.user.is_authenticated:
             await self.update_user_online(False)
-            
+            now = timezone.now()
+            readable_time = str(naturaltime(now))
+
             await self.channel_layer.group_send(
                 "global_presence",
                 {
                     'type': 'user_status_change',
                     'username': self.user.username,
-                    'is_online': False
+                    'is_online': False,
+                    'last_seen': readable_time
                 }
             )
             await self.channel_layer.group_discard(self.user_group, self.channel_name)

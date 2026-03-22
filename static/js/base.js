@@ -12,16 +12,13 @@ globalSocket.onmessage = function(e) {
         const statusDot = document.getElementById(`status-${data.username}`);
         const lastSeen = document.getElementById(`last-seen-${data.username}`)
         
-        
-        
         if (data.is_online) {
             if (statusDot) {
                 statusDot.classList.add('online');
                 statusDot.classList.remove('offline');
             }
             if (lastSeen) {
-               
-                lastSeen.style.display = 'none'
+                lastSeen.innerText = ''
             }
         } else {
             if (statusDot) {
@@ -29,7 +26,7 @@ globalSocket.onmessage = function(e) {
                 statusDot.classList.remove('online');
             }
             if (lastSeen) {
-                lastSeen.style.display = 'block'
+                lastSeen.innerText = 'last seen ' + data.last_seen
             }
         }
     }

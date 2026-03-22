@@ -4,6 +4,7 @@
 
 {% block content %}
 {% load static %}
+{% load humanize %}
 <article class="chat-container d-flex flex-column">
     <article class="px-3 d-flex flex-column border-bottom border-secondary mb-1">
         <section class=" pt-2 d-flex align-items-center">
@@ -20,7 +21,7 @@
             <a href="{% url 'user-info' participant.pk %}" class="h2">{{ participant.username }}</a>
         </section>
         <section class="d-flex flex-column px-2">
-             <p class="text-secondary" id="last-seen-{{ participant.username }}">{% if not participant.is_online %}  last seen {{ participant.last_seen|timesince }} ago {% endif %}</p> 
+             <p class="text-secondary" id="last-seen-{{ participant.username }}">{% if not participant.is_online %}  last seen {{ participant.last_seen|naturaltime }} {% endif %}</p> 
             <p id="typing-indicator" class="text-info h6 "></p>
         </section>
     </article>
