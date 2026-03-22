@@ -2,7 +2,7 @@ function markAsRead() {
     const url = window.DjangoConfig.markNotifReadUrl;
     const csrf = window.DjangoConfig.csrfToken;
 
-    if (!url) return; // Захист, якщо URL не передали
+    if (!url) return;
 
     fetch(url, {
         method: 'POST',
