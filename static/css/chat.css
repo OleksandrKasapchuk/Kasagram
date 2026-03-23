@@ -1,7 +1,7 @@
 .chat-container {
 	width: 70vw;
 	max-width: 1000px;
-	border: 2px solid rgba(255, 255, 255, 0.2);
+	border: 2px solid #2D2D2D;
 	height: 100vh;
 }
 
@@ -15,7 +15,7 @@
 }
 
 .message {
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #2D2D2D;
     font-size: 1rem;
     border-radius: 15px;
 
@@ -37,14 +37,14 @@
 /* Мої повідомлення (праві) */
 .message-wrapper.sent {
     background-color: #5bc0de; /* твій bg-info */
-    color: white;
+    color: #E4E4E4;
     border-bottom-right-radius: 4px; /* гострий кутик */
 }
 
 /* Чужі повідомлення (ліві) */
 .message-wrapper.received {
     background-color: #333;
-    color: #efefef;
+    color: #E4E4E4;
     border-bottom-left-radius: 4px;
 }
 
@@ -81,7 +81,7 @@
 }
 
 .delete-btn:hover {
-	color: white;
+	color: #E4E4E4;
 }
 
 
@@ -165,7 +165,7 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid #fff;
+    border: 2px solid #E4E4E4;
 }
 
 .online { background-color: #2ecc71; }
