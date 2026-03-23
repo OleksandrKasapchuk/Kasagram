@@ -40,15 +40,6 @@ li > a {
 	-webkit-text-stroke-width: 0px; 
 }
 
-.delete-btn {
-	color: transparent;
-	transition: 0.3s;
-}
-
-.delete-btn:hover {
-	color: white;
-}
-
 .new-notification-icon {
     background-color: red;
     color: white;

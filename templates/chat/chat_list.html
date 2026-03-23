@@ -4,20 +4,43 @@
 {% load static %}
 
 {% block content %}
-    <article class="d-flex flex-column">
-        <h2>Your Chats</h2>
-        <ul>
-            {% for item in chat_participants %}
-                <li class="h4 d-flex">
-                    <span id="status-{{ item.participant.username }}" 
-                            class="status-dot m-2 {% if item.participant.is_online %}online{% else %}offline{% endif %}">
-                    </span>
-                    <a href="{% url 'chat:chat_detail' item.chat.pk %}">
-                        <img src="{% if item.participant.avatar %}{{ item.participant.avatar.url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" class="sidebar-avatar">
-                        {{ item.participant.username }}
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-    </article>
+<section class="chats-page p-3">
+    <h2 class="mb-4">Messages</h2>
+    <div class="chat-list-container">
+        {% for item in chat_list_data %}
+            <a href="{% url 'chat:chat_detail' item.chat.pk %}" class="chat-card-link">
+                <article class="chat-item-card d-flex align-items-center p-3 mb-2">
+                    <div class="position-relative me-3">
+                        <img src="{% if item.participant.avatar %}{{ item.participant.avatar.url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" 
+                             class="chat-list-avatar">
+                        <span id="status-{{ item.participant.username }}" 
+                              class="status-dot-mini {% if item.participant.is_online %}online{% else %}offline{% endif %}">
+                        </span>
+                    </div>
+
+                    <div class="chat-info flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="chat-user-name">{{ item.participant.username }}</span>
+                            <span class="last-msg-time text-secondary small">
+                                {% if item.last_message %}
+                                    {{ item.last_message.timestamp|date:"H:i" }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="last-msg-preview text-secondary text-truncate">
+                            {% if item.last_message %}
+                                {% if item.last_message.user == request.user %}You: {% endif %}
+                                {{ item.last_message.content }}
+                            {% else %}
+                                <span class="text-muted italic">No messages yet</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+            </a>
+        {% empty %}
+            <p class="text-center text-secondary">No chats found.</p>
+        {% endfor %}
+    </div>
+</section>
 {% endblock %}

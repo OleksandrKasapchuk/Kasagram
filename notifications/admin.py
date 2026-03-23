@@ -1,5 +1,24 @@
 from django.contrib import admin
-from .models import *
+from .models import Notification
 
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    # Відображаємо основну інформацію
+    list_display = ('actor', 'notification_text', 'user', 'type', 'created_at', 'is_read')
+    
+    # Оптимізація запитів: підтягуємо все за один раз
+    list_select_related = ('user', 'actor', 'post', 'comment', 'chat')
+    
+    # Пагінація, щоб не вантажити 1000 нотіфікацій зразу
+    list_per_page = 20
+    
+    # Фільтри для швидкого пошуку
+    list_filter = ('type', 'is_read', 'created_at')
+    
+    # Пошук по іменах користувачів
+    search_fields = ('user__username', 'actor__username', 'type')
 
-admin.site.register(Notification)
+    # Кастомне поле, щоб бачити текст сповіщення прямо в списку
+    def notification_text(self, obj):
+        return f"{obj.actor.username}{obj.get_message()}"
+    notification_text.short_description = 'Content'

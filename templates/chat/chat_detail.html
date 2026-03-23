@@ -29,22 +29,29 @@
     <section id="chat-messages" class="d-flex flex-column">
         {% for message in chat.messages.all %}
             <article class="d-flex mx-3 mb-2 {% if request.user == message.user %}flex-row-reverse{% else %}flex-row{% endif %}" id="message-{{ message.pk }}">
-                <div class="message-wrapper position-relative {% if request.user == message.user %}sent{% else %}received{% endif %}">
-                    <div class="message-content px-3 py-2">
-                        {{ message.content }}
-                        <span class="status-spacer"></span> 
-                    </div>
+                <div class="message-wrapper {% if request.user == message.user %}sent{% else %}received{% endif %}">
+                    
+                    <div class="message-content">
+                        <span class="message-text">{{ message.content }}</span>
+                        <span class="status-spacer"></span>
+                        <div class="message-meta-container">
+                            <time datetime="{{ message.timestamp|date:'Y-m-d H:i' }}" class="message-time">
+                                {{ message.timestamp|date:"H:i" }}
+                            </time>
 
-                    {% if request.user == message.user %}
-                        <div class="message-status">
-                            <span class="material-symbols-outlined" {% if message.is_read %}style="color: #3498db" {% endif %}>
-                                {% if message.is_read %}done_all{% else %}check{% endif %}
-                            </span>
+                            {% if request.user == message.user %}
+                                <span class="material-symbols-outlined status-icon {% if message.is_read %}read{% endif %}">
+                                    {% if message.is_read %}done_all{% else %}check{% endif %}
+                                </span>
+                            {% endif %}
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
+
                 {% if request.user == message.user %}
-                    <span onclick="deleteMessage({{message.pk}})" class="material-symbols-outlined pointer p-2 delete-btn align-self-center">delete</span>
+                    <span onclick="deleteMessage({{ message.pk }})" class="delete-btn pointer material-symbols-outlined align-self-center">
+                        delete
+                    </span>
                 {% endif %}
             </article>
         {% endfor %}

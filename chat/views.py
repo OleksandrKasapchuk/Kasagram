@@ -21,14 +21,22 @@ class ChatListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        chat_participants = []
+        chat_data = []
         for chat in context['chats']:
             participant = chat.participants.exclude(id=self.request.user.id).first()
-            chat_participants.append({
+            # Беремо останнє повідомлення
+            last_message = chat.messages.order_by('-timestamp').first()
+            
+            chat_data.append({
                 'chat': chat,
-                'participant': participant
+                'participant': participant,
+                'last_message': last_message,
             })
-        context['chat_participants'] = chat_participants
+        
+        # Сортуємо самі чати так, щоб ті, де свіжіші повідомлення, були зверху
+        chat_data.sort(key=lambda x: x['last_message'].timestamp if x['last_message'] else chat.id, reverse=True)
+        
+        context['chat_list_data'] = chat_data
         return context
 
 
@@ -77,14 +85,13 @@ class ChatMessagesView(LoginRequiredMixin, View):
         if request.user not in chat.participants.all():
             return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
 
-        messages = Message.objects.filter(chat=chat).order_by('timestamp')
+        messages = Message.objects.filter(chat=chat)
         messages_data = []
         for message in messages:
             messages_data.append({
                 'id': message.pk,
                 'chat': message.chat.pk,
                 'content': message.content,
-                'avatar_url': message.user.avatar.url if message.user.avatar.url else static("images/default_avatar.jpg"),
                 'is_user_message': message.user == request.user,
                 'delete_url': reverse_lazy('chat:delete_message', args=[message.pk])
             })
