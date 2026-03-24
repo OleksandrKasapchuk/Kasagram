@@ -22,7 +22,7 @@
 }
 
 .post-hover-info:hover {
-	color: white;
+	color: #E4E4E4;
 	background-color: rgba(0, 0, 0, 0.3);
 }
 
@@ -34,5 +34,5 @@
 	border-radius: 100px;
 	width: 175px;
 	height: 175px;
-	border: white solid 2px;
+	border: #E4E4E4 solid 2px;
 }

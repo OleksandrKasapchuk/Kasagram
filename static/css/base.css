@@ -4,15 +4,15 @@
 }
 
 body {
-	background-color: black;
-	color: white !important;
+	background-color: #121212;
+	color: #E4E4E4 !important;
 	align-items: center;
 	
 }
 
 a, a:visited  {
 	text-decoration: none;
-	color: white;
+	color: #E4E4E4;
 	display: inline-block;
 }
 

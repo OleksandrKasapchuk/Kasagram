@@ -1,7 +1,7 @@
 .chat-container {
 	width: 70vw;
 	max-width: 1000px;
-	border: 2px solid rgba(255, 255, 255, 0.2);
+	border: 2px solid #2D2D2D;
 	height: 100vh;
 }
 
@@ -15,7 +15,7 @@
 }
 
 .message {
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #2D2D2D;
     font-size: 1rem;
     border-radius: 15px;
 
@@ -37,14 +37,14 @@
 /* Мої повідомлення (праві) */
 .message-wrapper.sent {
     background-color: #5bc0de; /* твій bg-info */
-    color: white;
+    color: #E4E4E4;
     border-bottom-right-radius: 4px; /* гострий кутик */
 }
 
 /* Чужі повідомлення (ліві) */
 .message-wrapper.received {
     background-color: #333;
-    color: #efefef;
+    color: #E4E4E4;
     border-bottom-left-radius: 4px;
 }
 
@@ -57,14 +57,15 @@
 /* Простір, щоб текст не перекривав галочку */
 .status-spacer {
     display: inline-block;
-    width: 20px;
+    width: 45px; /* Ширина приблизно дорівнює ширині "00:00 ✔✔" */
+    height: 1px;
 }
 
 /* Блок з іконкою в правому нижньому куті */
 .message-status {
     position: absolute;
-    right: 8px;
-    bottom: 4px;
+    right: 6px;
+    bottom: 3px;
     display: flex;
     align-items: center;
 }
@@ -72,4 +73,114 @@
 .message-status .material-symbols-outlined {
     font-size: 14px !important;
     opacity: 0.8;
+}
+
+.delete-btn {
+	color: transparent;
+	transition: 0.3s;
+}
+
+.delete-btn:hover {
+	color: #E4E4E4;
+}
+
+
+.message-wrapper {
+    max-width: 75%;
+    min-width: 90px; /* Трохи збільшив, щоб час точно влазив */
+    border-radius: 15px;
+    position: relative; /* База для абсолютного позиціювання часу */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.message-content {
+    word-wrap: break-word;
+    word-break: break-word;
+    padding: 8px 12px 14px 12px; /* Збільшений padding знизу (14px) для часу */
+}
+
+/* Контейнер для часу і галочки — тепер ЗАВЖДИ в кутку */
+.message-meta-container {
+    position: absolute;
+    right: 8px;
+    bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    pointer-events: none; /* Щоб не заважало копіювати текст */
+}
+
+.message-time {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    line-height: 1;
+}
+
+.status-icon {
+    font-size: 14px !important;
+    display: flex;
+}
+
+
+/* Контейнер списку */
+.chat-list-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Посилання-обгортка */
+.chat-card-link {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: block;
+}
+
+/* Сама картка чату */
+.chat-item-card {
+    background: #1E1E1E;
+    border-radius: 12px;
+    transition: background 0.2s ease, transform 0.1s ease;
+    border: 1px solid #f0f0f0;
+}
+
+.chat-item-card:hover {
+    background: #2A2A2A;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Аватар */
+.chat-list-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Точка статусу (міні) */
+.status-dot-mini {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #E4E4E4;
+}
+
+.online { background-color: #2ecc71; }
+.offline { background-color: #95a5a6; }
+
+/* Текстові блоки */
+.chat-user-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.last-msg-preview {
+    max-width: 300px; /* Обрізає довгий текст */
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

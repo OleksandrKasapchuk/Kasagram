@@ -63,7 +63,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
             message_text = data['message']
             username = data['username']
-            msg_obj_id = await self.save_message(username, self.room_name, message_text)
+            msg_obj = await self.save_message(username, self.room_name, message_text)
 
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -71,7 +71,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'type': 'chat_message',
                     'message': message_text,
                     'username': username,
-                    'message_id': msg_obj_id
+                    'message_id': msg_obj.id,
+                    'timestamp': msg_obj.timestamp.strftime('%H:%M')
                 }
             )
 
@@ -83,7 +84,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': event['message'],
             'username': event['username'],
             'message_id': event['message_id'],
-            'is_me': is_me
+            'is_me': is_me,
+            'timestamp': event['timestamp'],
         }))
     
     # Обробник події видалення для групи
@@ -114,8 +116,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def save_message(self, username, chat_id, message):
         user = CustomUser.objects.get(username=username)
         chat = Chat.objects.get(id=chat_id)
-        msg = Message.objects.create(user=user,chat=chat,content=message)
-        return msg.id
+        return Message.objects.create(user=user, chat=chat, content=message)
     
     async def messages_read_update(self, event):
         is_me = self.scope['user'].username == event['username']
