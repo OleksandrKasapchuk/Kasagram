@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'widget_tweaks',
     'core',
 	'auth_system',
 	'post_system',
@@ -112,12 +113,29 @@ CHANNEL_LAYERS = {
 
 import dj_database_url
 
-if os.environ.get("DATABASE_URL"):
+import sys
+
+# Отримуємо базовий URL бази даних
+db_url = os.environ.get("DATABASE_URL", "")
+
+# Перевіряємо, чи ми зараз запускаємо міграції
+is_migrating = 'migrate' in sys.argv
+
+if is_migrating and db_url:
+    # Замінюємо порт 6543 на 5432 тільки для міграцій
+    db_url = db_url.replace(":6543", ":5432")
+
+if db_url:
     DATABASES = {
         "default": dj_database_url.config(
-            conn_max_age=600,
-            ssl_require=True
-        )
+        default=db_url,
+        conn_max_age=0 if not is_migrating else 600, # Для міграцій можна довше
+        ssl_require=True
+    )
+    }
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require',
+        'target_session_attrs': 'read-write',
     }
 else:
     DATABASES = {
@@ -181,6 +199,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'auth_system.CustomUser'
 
 LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

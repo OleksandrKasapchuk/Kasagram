@@ -1,16 +1,14 @@
-
-.logo {
-	font-family: "Playwrite IT Moderna", cursive;
-	font-size: 24px;
-	width: 100%;
-	margin-bottom: 50px;
-}
-
 .a-btn{
 	padding: 5px 15px;
-	background-color: rgba(255, 255, 255, 0.2);
+	background-color: var(--card-dark);
 	border-radius: 10px;
-	color: #E4E4E4;
+	border: 1px solid var(--border-color);
+	color: var(--text-main);
+}
+
+.a-btn:hover {
+    background-color: #2A2A2A;
+    border-color: #383838;
 }
 
 li > a {
@@ -23,46 +21,60 @@ li > a {
 }
 
 .active img {
-	border: 2px solid #E4E4E4;
+    border: 2px solid var(--text-main);
+    padding: 2px; /* Створить чорну щілину між фото і білим колом */
+    background-color: var(--bg-dark);
 }
 
 .like-btn .heart {
-	font-size: 36px;
-    color: black; /* Порожнє сердечко */
-	-webkit-text-stroke-width: 1px; 
-	-webkit-text-stroke-color: #E4E4E4; 
+    font-size: 36px;
+    color: transparent;
+    -webkit-text-stroke-width: 1.5px; 
+    -webkit-text-stroke-color: var(--text-secondary); /* Спокійний сірий контур */
+    transition: 0.2s;
 }
+
 .like-btn .heart:hover {
 	-webkit-text-stroke-color: gray; 
 }
+
 .like-btn.liked .heart {
-	color: red; /* Заповнене сердечко */
-	-webkit-text-stroke-width: 0px; 
+    color: var(--accent-red);
+    -webkit-text-stroke-width: 0px; 
+    filter: drop-shadow(0 0 8px rgba(231, 76, 60, 0.3)); /* М'яке червоне сяйво */
 }
 
 .new-notification-icon {
-    background-color: red;
-    color: #E4E4E4;
+    background-color: var(--accent-red);
+    color: var(--text-main);
     border-radius: 50%;
     padding: 2px 5px;
     margin-left: 5px;
-    font-size: 12px;
+    font-size: 11px;
+	font-weight: bold;
 }
 
 .msg-input {
 	width: 95%;
 	border-radius: 20px;
-	border: 2px solid #2D2D2D;
+	border: 1px solid var(--border-color);
 	height: 50px;
+	color: var(--text-main);
+    background-color: var(--card-dark);
+}
+
+.msg-input:focus-within {
+    border-color: #444; /* Підсвічуємо рамку, коли користувач пише */
 }
 
 #message-content {
 	width: 95%;
 	background-color: transparent;
-	color: #E4E4E4;
+	color: var(--text-main);
 	border:0;
 	padding: 10px;
-} 
+}
+
 #message-content:focus {
 	outline: none;
 }
@@ -71,9 +83,9 @@ li > a {
     height: 12px;
     width: 12px;
     border-radius: 50%;
-    border: 2px solid #E4E4E4; /* Біла обводка, щоб гарно виглядало на фоні */
+    border: 2px solid var(--bg-dark);
     margin-right: 8px;
-    transition: background-color 0.3s ease; /* Плавний перехід кольору */
+    transition: background-color 0.3s ease;
 }
 
 /* Коли юзер онлайн */

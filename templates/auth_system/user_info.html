@@ -4,17 +4,17 @@
 {% load static %}
 <article class="main-container d-flex justify-content-center">
     <article class="d-flex flex-column align-items-center user-container">
-        <section class="d-flex gap3 ps-4 profile-header">
+        <section class="gap3 ps-4 profile-header">
             {% if user.avatar %}
                 <img src="{{ user.avatar.url }}" class="profile-avatar">
             {% else %}
                 <img src="{% static 'images/default_avatar.jpg' %}" class="profile-avatar">
             {% endif %}
-            <article class="d-flex flex-column gap">
-                <article class="d-flex gap">
+            <article class="flex-column gap">
+                <article class="gap">
                     <a href="{% url 'user-info' user.pk %}" class="h4">{{user.username}}</a>
                     {% if request.user == user %}
-                        <a href="{% url 'edit-user' user.id %}" class="a-btn">Edit profile</a>
+                        <a href="{% url 'edit-user' %}" class="a-btn">Edit profile</a>
                         <span class="material-symbols-outlined">settings</span>
                     {% else %}
                         <button id="follow-button-{{ user.pk }}" class="a-btn" onclick="toggleFollow({{ user.pk }})">
@@ -23,22 +23,29 @@
                         <a href="{% url 'chat:start_chat' user.pk %}" class="a-btn">Start Chat</a>
                     {% endif %}
                 </article>
-                <ul class="gap d-flex">
+                <ul class="gap">
                     <li><b>{{user.posts.count}}</b> posts</li>
                     <li><a href="{% url 'post:get-followers' user.pk %}"><span id="followers-count"><b>{{ user.followers.count }}</b></span> followers</a></li> 
                     <li><a href="{% url 'post:get-following' user.pk %}"><span id="following-count"><b>{{ user.following.count }}</b></span> following</a></li>
                 </ul>
-                <b>{{user.first_name}} {{user.last_name}}</b>
-                
+                <article class="d-flex flex-column">
+                    <b>{{user.first_name}} {{user.last_name}}</b>
+                    <i>{{user.bio}}</i>
+                </article>
             </article>
         </section>
-        <h2>User posts:</h2>
-        <section class="row">
+        <h2 class="mt-5 mb-4">User posts:</h2>
+        <section class="row justify-content-start"> 
             {% for post in user.posts.all %}
-            <div class="col-md-4 profile-post-container">
-                <img src="{{ post.media.url }}"  class="profile-post-media">
-                <a class="post-hover-info" href="{% url 'post:post-details' post.pk %}"><span><span class="heart">&hearts;</span> {{post.likes.count}}</span> <span><span class="material-symbols-outlined pointer">comment</span>{{post.comments.count}}</span></a>
-            </div>
+                <div class="col-4 profile-post-container"> 
+                    <article class="post-wrapper"> 
+                        <img src="{{ post.media.url }}" class="profile-post-media">
+                        <a class="post-hover-info" href="{% url 'post:post-details' post.pk %}">
+                            <span>&hearts; {{post.likes.count}}</span>
+                            <span><span class="material-symbols-outlined">comment</span> {{post.comments.count}}</span>
+                        </a>
+                    </article>
+                </div>
             {% endfor %}
         </section>
     </article>

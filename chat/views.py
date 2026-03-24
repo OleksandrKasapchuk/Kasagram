@@ -47,7 +47,14 @@ class ChatDetailView(LoginRequiredMixin, View):
             return redirect('chat:chat_list')
 
         participant = chat.participants.exclude(id=request.user.pk).first()
-        return render(request, 'chat/chat_detail.html', {'chat': chat, 'participant': participant})
+        initial_messages = Message.objects.filter(chat=chat).select_related('user').order_by('-pk')[:20]
+        
+        context = {
+            'chat': chat,
+            'participant': participant,
+            'messages': reversed(initial_messages) # Розвертаємо список для шаблону
+        }
+        return render(request, 'chat/chat_detail.html', context)
 
     def post(self, request, pk):
         chat = get_object_or_404(Chat, id=pk)
@@ -84,19 +91,32 @@ class ChatMessagesView(LoginRequiredMixin, View):
         chat = get_object_or_404(Chat, id=pk)
         if request.user not in chat.participants.all():
             return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
-
-        messages = Message.objects.filter(chat=chat)
-        messages_data = []
+        
+        oldest_id = request.GET.get('oldest_id') 
+        messages = Message.objects.filter(chat=chat).select_related('user')
+        
+        if oldest_id and oldest_id.isdigit():
+            messages = messages.filter(pk__lt=oldest_id).order_by('-pk')[:20]
+        else:
+            messages = messages.order_by('-pk')[:20]
+            
+        # Формуємо список даних
+        data_list = []
         for message in messages:
-            messages_data.append({
+            data_list.append({
                 'id': message.pk,
-                'chat': message.chat.pk,
                 'content': message.content,
                 'is_user_message': message.user == request.user,
+                # Додаємо час, щоб JS не малював пусте місце
+                'timestamp': message.timestamp.strftime('%H:%M'),
                 'delete_url': reverse_lazy('chat:delete_message', args=[message.pk])
             })
-
-        return JsonResponse({'success': True, 'messages': messages_data})
+        
+        # Оскільки ми брали [:30] з order_by('-pk'), повідомлення йдуть 
+        return JsonResponse({
+            'success': True, 
+            'messages': data_list[::-1]
+        })
 
 @login_required
 def start_chat(request, pk):

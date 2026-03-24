@@ -18,7 +18,6 @@
     border: 1px solid #2D2D2D;
     font-size: 1rem;
     border-radius: 15px;
-
 	max-width: 75%;          /* Обмежуємо ширину повідомлення */
     word-wrap: break-word;   /* Старий стандарт для переносу */
     overflow-wrap: break-word; /* Сучасний стандарт */
@@ -36,22 +35,16 @@
 
 /* Мої повідомлення (праві) */
 .message-wrapper.sent {
-    background-color: #5bc0de; /* твій bg-info */
+    background-color: #004C6D;
     color: #E4E4E4;
     border-bottom-right-radius: 4px; /* гострий кутик */
 }
 
 /* Чужі повідомлення (ліві) */
 .message-wrapper.received {
-    background-color: #333;
+    background-color: #2A2A2A;
     color: #E4E4E4;
     border-bottom-left-radius: 4px;
-}
-
-/* Контент повідомлення */
-.message-content {
-    word-wrap: break-word;
-    padding-bottom: 12px !important; /* Місце під іконку знизу */
 }
 
 /* Простір, щоб текст не перекривав галочку */
@@ -140,7 +133,7 @@
     background: #1E1E1E;
     border-radius: 12px;
     transition: background 0.2s ease, transform 0.1s ease;
-    border: 1px solid #f0f0f0;
+    border: 1px solid #2D2D2D;
 }
 
 .chat-item-card:hover {
@@ -165,7 +158,7 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid #E4E4E4;
+    border: 2px solid #1E1E1E;
 }
 
 .online { background-color: #2ecc71; }

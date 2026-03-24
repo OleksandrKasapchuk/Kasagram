@@ -68,7 +68,14 @@
 					</a>
 				</li>
 				<li class="sidebar-item {% if request.resolver_match.url_name == 'logout' %}active{% endif %}">
-					<a href="{% url 'logout' %}"><span class="material-symbols-outlined">logout</span><span class="sidebar-text">Logout</span></a>
+					<form action="{% url 'logout' %}" method="post" id="logout-form" style="display: none;">
+						{% csrf_token %}
+					</form>
+					
+					<a href="javascript:void(0)" onclick="document.getElementById('logout-form').submit();">
+						<span class="material-symbols-outlined">logout</span>
+						<span class="sidebar-text">Logout</span>
+					</a>
 				</li>
 			{% endif %}
 		</ul>
