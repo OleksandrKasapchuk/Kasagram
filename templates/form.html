@@ -1,11 +1,96 @@
 {% extends "base.html" %}
-
+{% load widget_tweaks %}
 
 {% block content %}
-<br><br>
-<form method="post" enctype="multipart/form-data">
-	{% csrf_token %}
-	{{form.as_p}}
-	<button type="submit">Submit</button>
-</form>
+<div class="main-container d-flex justify-content-center">
+    <div class="form">
+        {# 1. Розумний заголовок #}
+        <h2 class="mb-4" style="color: var(--text-main);">
+            {% if title %}
+                {{ title }}
+            {% elif request.resolver_match.url_name == 'login' %}
+                Login
+            {% elif request.resolver_match.url_name == 'register' %}
+                Register
+            {% elif request.resolver_match.url_name == 'edit-user' %}
+                Edit User
+            {% elif form.instance.pk %}
+                Edit Post
+            {% else %}
+                Create Post
+            {% endif %}
+        </h2>
+
+        {% if form.non_field_errors %}
+            <div style="color: var(--accent-red); margin-bottom: 15px;">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="mb-4">
+                    <label class="mb-2 custom-label" style="color: var(--text-secondary);">
+                        {{ field.label }}
+                    </label>
+                    
+                    {% render_field field class="form-control custom-dark-input" %}
+
+                    {% if field.errors %}
+                        <div style="color: var(--accent-red); font-size: 0.85rem; mt-1">
+                            {{ field.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            {# Спеціальне прев'ю для аватара при редагуванні юзера #}
+            {% if request.resolver_match.url_name == 'edit-user' and user.avatar %}
+                <div class="mb-4">
+                    <img src="{{ user.avatar.url }}" 
+                         style="max-width: 150px; border-radius: 50%; border: 1px solid var(--border-color);">
+                </div>
+            {# Прев'ю для медіа в постах #}
+            {% elif form.instance.media %}
+                <div class="mb-4">
+                    <img src="{{ form.instance.media.url }}" 
+                         style="max-width: 200px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>
+            {% endif %}
+
+            <div class="d-flex flex-column gap-3">
+                <div class="d-flex gap">
+                    <button type="submit" class="btn-submit pointer">Submit</button>
+                    <a href="{% url 'post:index' %}" class="gray-text pointer" style="align-self: center;">Cancel</a>
+                </div>
+
+                {# 2. Додаткові посилання: Password Change та Login/Register #}
+                <div class="mt-3 d-flex flex-column gap-2" style="font-size: 0.9rem;">
+                    
+                    {# Посилання на зміну пароля тільки при редагуванні профілю #}
+                    {% if request.resolver_match.url_name == 'edit-user' %}
+                        <a href="{% url 'password_change' %}" style="color: var(--text-secondary);" class="pb-2">
+                            <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">lock</span>
+                            Change password
+                        </a>
+                    {% endif %}
+
+                    {% if request.resolver_match.url_name == 'login' %}
+                        <p>
+                            <span class="gray-text">Don't have an account?</span> 
+                            <a href="{% url 'register' %}" style="color: var(--text-main); font-weight: bold;">Register</a>
+                        </p>
+                    {% elif request.resolver_match.url_name == 'register' %}
+                        <p>
+                            <span class="gray-text">Already have an account?</span> 
+                            <a href="{% url 'login' %}" style="color: var(--text-main); font-weight: bold;">Login</a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

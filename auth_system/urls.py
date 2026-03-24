@@ -1,13 +1,27 @@
 from django.urls import path
-import auth_system.views as auth_views 
-
+from django.contrib.auth import views as auth_views
+from . import views
 
 urlpatterns = [
-	path("user-info/<int:pk>", auth_views.user_info, name="user-info"),
-    path("register/", auth_views.register_user, name="register"),
-    path("login/", auth_views.login_user, name="login"),
-    path("logout/", auth_views.logout_user, name="logout"),
-    path("edit-user/<int:user_id>", auth_views.edit_user, name="edit-user"),
-    path("change-password/<int:user_id>", auth_views.change_password, name="change-password"),
-	path("toggle-follow/<int:pk>", auth_views.toggle_follow, name="toggle-follow"),
+    # Реєстрація (наша кастомна в'юшка)
+    path('register/', views.RegisterView.as_view(), name='register'),
+
+    # Логін та Логаут (вбудовані, просто вказуємо шаблон)
+    path('login/', auth_views.LoginView.as_view(
+        template_name='form.html',
+        extra_context={'title': 'Login'}
+    ), name='login'),
+    
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    # Зміна пароля (Django сам перевірить старий пароль і хешує новий)
+    path('password-change/', auth_views.PasswordChangeView.as_view(
+        template_name='form.html',
+        success_url='/', # куди кидати після зміни
+        extra_context={'title': 'Change Password'}
+    ), name='password_change'),
+
+    # Профіль та редагування
+    path('user-info/<int:pk>/', views.UserDetailView.as_view(), name='user-info'),
+    path('edit-user/', views.UserUpdateView.as_view(), name='edit-user'),
 ]

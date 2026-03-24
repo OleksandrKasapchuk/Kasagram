@@ -3,9 +3,9 @@
 
 
 {% block content %}
+<h1>Edit post:</h1>
 <form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
-	<label for="media">Edit post:</label>
 	<input type="file" id="media" name="media" class="form-control form-input" value="{{post.media.url}}">
 	{% if post.media %}
 		<img src="{{post.media.url}}" class="post-media">
@@ -13,7 +13,7 @@
 	<label for="content">Content:</label>
 	<input type="text" id="content" name="content" value="{{post.content}}">
 
-	<button type="submit">Submit</button>
+	<button type="submit" class="btn-submit">Submit</button>
 </form>
 
 {% endblock %}

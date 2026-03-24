@@ -14,7 +14,7 @@
                 <article class="gap">
                     <a href="{% url 'user-info' user.pk %}" class="h4">{{user.username}}</a>
                     {% if request.user == user %}
-                        <a href="{% url 'edit-user' user.id %}" class="a-btn">Edit profile</a>
+                        <a href="{% url 'edit-user' %}" class="a-btn">Edit profile</a>
                         <span class="material-symbols-outlined">settings</span>
                     {% else %}
                         <button id="follow-button-{{ user.pk }}" class="a-btn" onclick="toggleFollow({{ user.pk }})">
@@ -28,8 +28,10 @@
                     <li><a href="{% url 'post:get-followers' user.pk %}"><span id="followers-count"><b>{{ user.followers.count }}</b></span> followers</a></li> 
                     <li><a href="{% url 'post:get-following' user.pk %}"><span id="following-count"><b>{{ user.following.count }}</b></span> following</a></li>
                 </ul>
-                <b>{{user.first_name}} {{user.last_name}}</b>
-                
+                <article class="d-flex flex-column">
+                    <b>{{user.first_name}} {{user.last_name}}</b>
+                    <i>{{user.bio}}</i>
+                </article>
             </article>
         </section>
         <h2 class="mt-5 mb-4">User posts:</h2>

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from .models import *
-from django.views.generic import View, ListView, DetailView, UpdateView, DeleteView
+from django.views.generic import View, ListView, DetailView, UpdateView, DeleteView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from .mixins import *
@@ -69,41 +69,26 @@ class PostDetailView(DetailView):
 			raise e
 
 
-class PostCreateView(LoginRequiredMixin, View):
-	def get(self, request, *args, **kwargs):
-		return render(
-			request,
-			"form.html",
-			context = {"form": PostCreateForm}
-		)
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostCreateForm
+    template_name = "form.html"
+    success_url = reverse_lazy("post:index")
 
-	def post(self, request, *args, **kwargs):
-		form = PostCreateForm(request.POST, request.FILES)
-		if form.is_valid():
-			post = form.save(commit=False)
-			post.user = self.request.user
-			post.save()
-			return redirect("post:index")
-		else:
-			pass
+    def form_valid(self, form):
+        form.instance.user = self.request.user  # Прив'язуємо юзера автоматично
+        return super().form_valid(form)
 
 
 class PostUpdateView(LoginRequiredMixin, UserIsOwnerMixin, UpdateView):
-	model = Post
-	def get(self, request, pk, *args, **kwargs):
-		return render(
-			request,
-			"post_system/edit_post.html",
-			context={"post": Post.objects.get(pk=pk)}
-		)
+    model = Post
+    form_class = PostCreateForm
+    template_name = "post_system/edit_post.html"
+    success_url = reverse_lazy("post:index")
 
-	def post(self, request, pk, *args, **kwargs):
-		post = Post.objects.get(pk=pk)
-		post.content = request.POST.get('content')
-		if request.FILES.get('media') != None:
-			post.media = request.FILES.get('media')
-		post.save()
-		return redirect("post:index")
+    def form_valid(self, form):
+        # Якщо треба щось додати перед збереженням
+        return super().form_valid(form)
 
 
 class PostDeleteView(LoginRequiredMixin, UserIsOwnerMixin, DeleteView):

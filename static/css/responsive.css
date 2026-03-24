@@ -52,8 +52,8 @@
 
 	.profile-post-container {
         width: 33%; /* Три в ряд */
-        height: auto;   /* Висоту вирахує aspect-ratio з нашого основного CSS */
-        padding: 2px;   /* Менші відступи для малих екранів */
+        height: auto; 
+        padding: 2px;
     }
 
 	.main-container {
@@ -65,7 +65,7 @@
         width: 80px; 
         height: 80px;
     }
-	
+
 	.chat-container {
 		width: 99vw;
 		height: 90vh;

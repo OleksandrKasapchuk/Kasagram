@@ -68,3 +68,42 @@ ul {
 	width: calc(100% - 280px);
 	align-items: center;
 }
+.form {
+	width: 60vw;
+}
+
+
+.custom-dark-input {
+	background-color: var(--card-dark) !important;
+	border: 1px solid var(--border-color) !important;
+	color: var(--text-main) !important;
+	border-radius: 8px;
+	padding: 12px;
+	transition: border-color 0.2s;
+}
+
+.custom-dark-input:focus {
+	outline: none;
+	border-color: var(--text-secondary) !important;
+	box-shadow: none !important;
+}
+
+
+.btn-submit {
+	background-color: var(--text-main);
+	color: var(--bg-dark);
+	border: none;
+	padding: 10px 30px;
+	border-radius: 6px;
+	font-weight: 600;
+}
+
+/* Стилізація textarea, якщо вона є у формі */
+textarea.custom-dark-input {
+	min-height: 120px;
+}
+
+.custom-label {
+	color: var(--text-secondary); 
+	font-size: 0.9rem;
+}
