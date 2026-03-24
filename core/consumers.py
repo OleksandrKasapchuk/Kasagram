@@ -5,6 +5,8 @@ from chat.models import Message, Chat
 from auth_system.models import CustomUser
 from django.utils import timezone
 from django.contrib.humanize.templatetags.humanize import naturaltime
+import asyncio
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -20,11 +22,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
-    # Отримання повідомлення від JS
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
-
 
         if action == 'mark_as_read':
             await self.mark_messages_as_read()
@@ -136,38 +136,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 class GlobalConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.user = self.scope['user']
-        if self.user.is_authenticated:
-            self.user_group = f"user_global_{self.user.id}"
-            
-            # Додаємо юзера в його персональну групу для нотіфікацій
-            await self.channel_layer.group_add(self.user_group, self.channel_name)
-            
-            # Додаємо в загальну групу "всіх", щоб бачити статуси інших
-            await self.channel_layer.group_add("global_presence", self.channel_name)
-            
-            await self.accept()
-            
-            # Оновлюємо статус в БД
-            await self.update_user_online(True)
-            
-            # Розсилаємо всім: "Юзер X зайшов на сайт"
-            await self.channel_layer.group_send(
-                "global_presence",
-                {
-                    'type': 'user_status_change',
-                    'username': self.user.username,
-                    'is_online': True
-                }
-            )
+    delays = {}
 
     async def disconnect(self, close_code):
         if self.user.is_authenticated:
+            user_id = self.user.id
+            
+            # Створюємо задачу на "вимкнення" через 5 секунд
+            task = asyncio.create_task(self.delayed_offline(user_id))
+            GlobalConsumer.delays[user_id] = task
+
+    async def delayed_offline(self, user_id):
+        await asyncio.sleep(5) # Чекаємо 5 секунд
+        
+        # Якщо задача все ще в словнику (її не скасував connect)
+        if user_id in GlobalConsumer.delays:
             await self.update_user_online(False)
+            
             now = timezone.now()
             readable_time = str(naturaltime(now))
-
             await self.channel_layer.group_send(
                 "global_presence",
                 {
@@ -177,9 +164,34 @@ class GlobalConsumer(AsyncWebsocketConsumer):
                     'last_seen': readable_time
                 }
             )
-            await self.channel_layer.group_discard(self.user_group, self.channel_name)
-            await self.channel_layer.group_discard("global_presence", self.channel_name)
+            del GlobalConsumer.delays[user_id]
 
+    async def connect(self):
+        self.user = self.scope['user']
+        if self.user.is_authenticated:
+            user_id = self.user.id
+            
+            # ЯКЩО ЮЗЕР ПЕРЕЙШОВ НА НОВУ СТОРІНКУ:
+            # Скасовуємо задачу на офлайн, бо він щойно підключився знову!
+            if user_id in GlobalConsumer.delays:
+                GlobalConsumer.delays[user_id].cancel()
+                del GlobalConsumer.delays[user_id]
+            else:
+                # Якщо його не було в списку на вихід — значить він реально зайшов вперше
+                await self.update_user_online(True)
+                await self.channel_layer.group_send(
+                    "global_presence",
+                    {
+                        'type': 'user_status_change',
+                        'username': self.user.username,
+                        'is_online': True
+                    }
+                )
+            
+            self.user_group = f"user_global_{user_id}"
+            await self.channel_layer.group_add(self.user_group, self.channel_name)
+            await self.channel_layer.group_add("global_presence", self.channel_name)
+            await self.accept()
     async def user_status_change(self, event):
         # Відправляємо інфу про зміну статусу на фронтенд/апку
         await self.send(text_data=json.dumps(event))

@@ -56,17 +56,25 @@ chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     const isMe = data.is_me !== undefined ? data.is_me : (data.username === currentUser);
 
-    // ... (код для typing та delete залишається без змін)
-
-    if (data.message) {
+    if (data.type === 'user_typing') {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (data.typing && data.username !== currentUser) {
+            typingIndicator.innerText = `${data.username} is typing...`;
+        } else {
+            typingIndicator.innerText = '';
+        }
+        return;
+    } else if (data.type === 'delete_message') {
+        const messageDiv = document.getElementById(`message-${data.message_id}`);
+        if (messageDiv) messageDiv.remove();
+        return;
+    } else if (data.message) {
         const chatMessages = document.getElementById('chat-messages');
         
         if (!isMe) {
             chatSocket.send(JSON.stringify({ 'action': 'mark_as_read' }));
         }
 
-        // Отримуємо час від сервера (переконайся, що твій Consumer його шле)
-        // Якщо сервер не шле час, використаємо поточний локальний як запасний
         const msgTime = data.timestamp || new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
         const messageHtml = `
