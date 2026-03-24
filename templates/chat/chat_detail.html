@@ -27,7 +27,7 @@
     </article>
 
     <section id="chat-messages" class="d-flex flex-column">
-        {% for message in chat.messages.all %}
+        {% for message in messages %}
             <article class="d-flex mx-3 mb-2 {% if request.user == message.user %}flex-row-reverse{% else %}flex-row{% endif %}" id="message-{{ message.pk }}">
                 <div class="message-wrapper {% if request.user == message.user %}sent{% else %}received{% endif %}">
                     
