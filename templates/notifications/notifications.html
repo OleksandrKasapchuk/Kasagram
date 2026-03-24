@@ -3,7 +3,7 @@
 {% block content %}
 {% load static %}
 <h1>Notifications</h1>
-<article id="notifications-list">
+<article id="notifications-list" class="ps-2">
     {% for notification in notifications %}
         <h4>
             <a href="{% url 'user-info' notification.actor.pk %}">

@@ -1,34 +1,55 @@
+.logo {
+	font-family: "Playwrite IT Moderna", cursive;
+	font-size: 24px;
+	width: 100%;
+	margin-bottom: 50px;
+	padding-left: 15px;
+}
+
 .sidebar {
-	border-right: 2px solid rgba(255, 255, 255, 0.1);
+	border-right: 1px solid var(--border-color);
+	background-color: var(--bg-dark);
 	height: 100%;
-	width: 350px;
-	display: inline-block;
+	width: 280px;
 	position: fixed;
     top: 0;
     left: 0;
-	z-index: 1;
+	z-index: 100;
+	padding: 20px 10px;
 }
 
 .sidebar ul {
-	height: 100%;
-	width: 80%;
-	padding: 20px;
+	width: 100%;
+	display: flex;
+    flex-direction: column;
+	gap: 8px;
 }
 
 .sidebar-item {
-	width: 100%;
-	padding: 10px;
-	border-radius: 10px;
-	font-size: 18px;
-	transition: 0.5s;
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 16px; /* 18px може бути завеликим для списку */
+    color: var(--text-main);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Відступ між іконкою/аватаром і текстом */
 }
 
 .sidebar-item:hover {
-	background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--card-dark); /* #1E1E1E */
+    transform: translateX(5px); /* Легкий ефект руху вправо */
+}
+
+.sidebar-item.active {
+    background-color: var(--card-dark);
+    font-weight: 600;
 }
 
 .sidebar-avatar {
-	border-radius: 30px;
-	width: 24px;
-	height: 24px;
+    border-radius: 50%; /* Завжди ідеальне коло */
+    width: 28px;  /* Трохи збільшив для кращої видимості */
+    height: 28px;
+    object-fit: cover;
 }

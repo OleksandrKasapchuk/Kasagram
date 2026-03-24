@@ -1,38 +1,70 @@
 .profile-post-container {
-	width: 300px;
-	height: 300px;
+    padding: 5px;
+}
+
+.post-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Квадрат */
+    background-color: #1E1E1E; /* Тимчасовий фон, щоб бачити блок, поки вантажиться фото */
+    overflow: hidden;
+    display: block; /* Важливо для <a> або <div> */
 }
 
 .profile-post-media {
-	width: 100%;
-	height: 95%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Щоб фото не сплющувалось */
 }
 
 .post-hover-info {
-	color: transparent;
-	width: 100%;
-	height: 100%;
-	bottom: 100%;
-	position: relative;
-	padding: 100px;
-	transition: 0.1s;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0); /* Спочатку прозорий */
+    color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px; /* Відступ між іконками лайків/коментів */
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .post-hover-info:hover {
-	color: #E4E4E4;
-	background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: var(--text-main);
+    text-decoration: none;
 }
 
 .user-container {
-	width: 75%;
+	width: 80%;
 }
 
 .profile-avatar {
-	border-radius: 100px;
-	width: 175px;
-	height: 175px;
-	border: #E4E4E4 solid 2px;
+    border-radius: 50%; /* Ідеальне коло */
+    width: 175px;
+    height: 175px;
+    object-fit: cover;
+    border: 2px solid var(--border-color); /* Не такий агресивний, як чисто білий */
+    padding: 3px; /* Ефект відступу від рамки */
+    background-color: var(--bg-dark);
+}
+
+.post-hover-info span {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.user-container .row {
+    width: 100%;       /* Явно кажемо рядку зайняти всю ширину */
+    max-width: 935px;  /* Стандартна ширина сітки Instagram */
+    display: flex;
+    flex-wrap: wrap;   /* Дозволяємо переносити колонки */
 }

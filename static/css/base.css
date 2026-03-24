@@ -1,18 +1,37 @@
 * {
 	margin: 0;
 	padding: 0;
+	box-sizing: border-box;
+}
+
+:root {
+    --bg-dark: #121212;
+    --card-dark: #1E1E1E;
+    
+    /* Наш основний колір для ліній та рамок */
+    --border-color: #2D2D2D; 
+    
+    /* Колір для ледь помітних розділювачів */
+    --border-soft: rgba(255, 255, 255, 0.05); 
+
+    --text-main: #F0F0F0;
+    --text-secondary: #B0B0B0;
+	--accent-red: #E74C3C;
 }
 
 body {
 	background-color: #121212;
-	color: #E4E4E4 !important;
+	color: var(--text-main);
 	align-items: center;
-	
+}
+
+[class^="gap"] {
+    display: flex; /* Автоматично робимо флексом все, що починається на gap */
 }
 
 a, a:visited  {
 	text-decoration: none;
-	color: #E4E4E4;
+	color: inherit;
 	display: inline-block;
 }
 
@@ -42,5 +61,10 @@ ul {
 
 .main-container {
 	margin: 40px 0 0 0;
-	display: flex;
+	width: 100%;
+}
+
+.main-index {
+	width: calc(100% - 280px);
+	align-items: center;
 }
