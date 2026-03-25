@@ -26,11 +26,12 @@ class ChatListView(LoginRequiredMixin, ListView):
             participant = chat.participants.exclude(id=self.request.user.id).first()
             # Беремо останнє повідомлення
             last_message = chat.messages.order_by('-timestamp').first()
-            
+            unread_count = chat.messages.filter(user=participant, is_read=False).count()
             chat_data.append({
                 'chat': chat,
                 'participant': participant,
                 'last_message': last_message,
+                'unread_count': unread_count,
             })
         
         # Сортуємо самі чати так, щоб ті, де свіжіші повідомлення, були зверху
