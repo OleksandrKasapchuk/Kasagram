@@ -46,7 +46,7 @@ ul {
 }
 
 .gray-text {
-	color: gray;
+	color: var(--text-secondary);
 }
 
 .gap {
@@ -68,10 +68,14 @@ ul {
 	width: calc(100% - 280px);
 	align-items: center;
 }
+
 .form {
 	width: 60vw;
 }
 
+.red {
+	color: var(--accent-red);
+}
 
 .custom-dark-input {
 	background-color: var(--card-dark) !important;

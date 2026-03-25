@@ -83,7 +83,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 class PostUpdateView(LoginRequiredMixin, UserIsOwnerMixin, UpdateView):
     model = Post
     form_class = PostCreateForm
-    template_name = "post_system/edit_post.html"
+    template_name = "form.html"
     success_url = reverse_lazy("post:index")
 
     def form_valid(self, form):
