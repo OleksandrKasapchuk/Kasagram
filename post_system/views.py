@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from .models import *
 from django.views.generic import View, ListView, DetailView, UpdateView, DeleteView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -53,13 +54,14 @@ class PostDetailView(DetailView):
 			content=content,
 			parent_id=parent_id
 			)
+			readable_time = str(naturaltime(comment.date_published))
 			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 				return JsonResponse({
 					'success': True,
 					'username': request.user.username,
 					'content': comment.content,
 					'avatar_url': request.user.avatar.url,
-					'date_published': comment.date_published,
+					'date_published': readable_time,
 					'user_url': reverse_lazy('user-info', kwargs={"pk":comment.user.pk}),
 					'update_url': reverse_lazy('post:update-comment', kwargs={"pk":comment.pk}),
 					'commentId': comment.pk,

@@ -29,11 +29,8 @@
 
 /* Контейнер, який об'єднує плашку та поле вводу */
 .msg-input-container {
-    position: sticky; /* Щоб воно завжди було знизу, якщо sidebar довгий */
+    position: sticky;
     bottom: 0;
-    background-color: var(--bg-dark); /* Твій колір фону */
-    border-top: 1px solid var(--border-color); /* Твій колір рамок */
-    padding-top: 5px;
 }
 
 /* Стилі для плашки "Replying to..." */

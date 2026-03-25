@@ -4,8 +4,9 @@
 	box-sizing: border-box;
 }
 
+
 :root {
-    --bg-dark: #121212;
+	--bg-dark: #121212;
     --card-dark: #1E1E1E;
     
     /* Наш основний колір для ліній та рамок */
@@ -13,10 +14,14 @@
     
     /* Колір для ледь помітних розділювачів */
     --border-soft: rgba(255, 255, 255, 0.05); 
-
+	
     --text-main: #F0F0F0;
     --text-secondary: #B0B0B0;
 	--accent-red: #E74C3C;
+}
+
+.custom-border {
+	border-color: var(--border-color) !important; 
 }
 
 body {

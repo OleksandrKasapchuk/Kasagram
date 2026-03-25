@@ -34,7 +34,7 @@ function SendComment(postId) {
         if (data.success) {
             // Створюємо елемент коментаря
             const newCommentHtml = `
-                <section class="d-flex flex-column" style="flex-grow: 1;">
+                <section class="d-flex flex-column flex-grow-1">
                     <section class="d-flex">
                         <a href="${data.user_url}"><img src="${data.avatar_url}" class="sidebar-avatar me-3"></a>
                         <p><a href="${data.user_url}"><b>${data.username}</b></a> ${data.content}</p>
@@ -58,13 +58,13 @@ function SendComment(postId) {
                 const parentLi = document.getElementById(`comment-${currentParentId}`);
                 // Шукаємо всередині батька контейнер <article class="ms-5">, який ти створив у HTML
                 let repliesContainer = parentLi.querySelector('article.ms-3');
-                repliesContainer.appendChild(newComment);
+                repliesContainer.insertAdjacentElement('afterbegin', newComment);
                 
                 // Скидаємо стан відповіді
                 cancelReply();
             } else {
                 // Якщо це звичайний коментар — просто в кінець головного списку
-                document.getElementById('comments').appendChild(newComment);
+                document.getElementById('comments').insertAdjacentElement('afterbegin', newComment);
             }
 
             textarea.value = '';
@@ -74,6 +74,19 @@ function SendComment(postId) {
     })
     .catch(error => console.error('Error:', error));
 }
+
+const messageInput = document.getElementById('message-content');
+
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        
+        const sendBtn = document.querySelector('span[onclick^="SendComment"]');
+        if (sendBtn) {
+            sendBtn.click(); // Це викличе SendComment з потрібним ID поста
+        }
+    }
+});
 
 function deleteComment(commentId) {
     if (!confirm('Are you sure you want to delete this comment?')) {

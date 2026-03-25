@@ -107,7 +107,6 @@ class ChatMessagesView(LoginRequiredMixin, View):
                 'id': message.pk,
                 'content': message.content,
                 'is_user_message': message.user == request.user,
-                # Додаємо час, щоб JS не малював пусте місце
                 'timestamp': message.timestamp.strftime('%H:%M'),
                 'delete_url': reverse_lazy('chat:delete_message', args=[message.pk])
             })
