@@ -75,6 +75,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'timestamp': msg_obj.timestamp.strftime('%H:%M')
                 }
             )
+            recipient = await self.get_recipient(self.room_name)
+
+            unread_cnt = await self.count_unread(recipient, self.room_name)
+
+            await self.channel_layer.group_send(
+                f"user_global_{recipient.id}", 
+                {
+                    "type": "chat_notification",
+                    "message": message_text,
+                    "chat_id": self.room_name,
+                    "sender_name": username,
+                    "unread_count": unread_cnt # Додай це
+                }
+            )
+
+    @database_sync_to_async
+    def count_unread(self, recipient, chat_id):
+        chat = Chat.objects.get(id=chat_id)
+        return chat.messages.filter(is_read=False).exclude(user=recipient).count()
 
     # Обробка отриманого повідомлення групою
     async def chat_message(self, event):
@@ -87,6 +106,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'is_me': is_me,
             'timestamp': event['timestamp'],
         }))
+    
+    @database_sync_to_async
+    def get_recipient(self, chat_id):
+        chat = Chat.objects.get(id=chat_id)
+        # Повертає учасника, який не є поточним юзером
+        return chat.participants.exclude(id=self.scope['user'].id).first()
     
     # Обробник події видалення для групи
     async def message_deleted(self, event):
@@ -209,4 +234,15 @@ class GlobalConsumer(AsyncWebsocketConsumer):
             "actor_url": event.get("actor_url"),
             "actor_avatar": event.get("actor_avatar"),
             "target_url": event.get("target_url"),
+        }))
+
+    async def chat_notification(self, event):
+        # Цей метод викликає сам Django, коли в групу прийшло повідомлення
+        # Тепер ми просто пересилаємо це в браузер через WebSocket
+        await self.send(text_data=json.dumps({
+            "action": "new_message",
+            "chat_id": event["chat_id"],
+            "message": event["message"],
+            "unread_count": event.get("unread_count"), 
+            "sender_name": event.get("sender_name")
         }))

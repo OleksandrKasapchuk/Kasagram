@@ -15,7 +15,7 @@
 }
 
 .message {
-    border: 1px solid #2D2D2D;
+    border: 1px solid var(--border-color);
     font-size: 1rem;
     border-radius: 15px;
 	max-width: 75%;          /* Обмежуємо ширину повідомлення */
@@ -42,7 +42,7 @@
 
 /* Чужі повідомлення (ліві) */
 .message-wrapper.received {
-    background-color: #2A2A2A;
+    background-color: var(--border-color);
     color: #E4E4E4;
     border-bottom-left-radius: 4px;
 }
@@ -74,7 +74,7 @@
 }
 
 .delete-btn:hover {
-	color: #E4E4E4;
+	color: var(--text-main);
 }
 
 
@@ -130,10 +130,10 @@
 
 /* Сама картка чату */
 .chat-item-card {
-    background: #1E1E1E;
+    background: var(--card-dark);
     border-radius: 12px;
     transition: background 0.2s ease, transform 0.1s ease;
-    border: 1px solid #2D2D2D;
+    border: 1px solid var(--border-color);
 }
 
 .chat-item-card:hover {
@@ -158,7 +158,7 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid #1E1E1E;
+    border: 2px solid var(--bg-dark);
 }
 
 .online { background-color: #2ecc71; }

@@ -26,3 +26,33 @@
 	height: 50px;
 	gap: 10px;
 }
+
+/* Контейнер, який об'єднує плашку та поле вводу */
+.msg-input-container {
+    position: sticky;
+    bottom: 0;
+}
+
+/* Стилі для плашки "Replying to..." */
+.reply-preview-bar {
+    background-color: #2a2a2a; /* Трохи світліше за фон, як картка */
+    color: var(--text-light); /* Твій колір тексту */
+    padding: 8px 15px;
+    border-radius: 10px 10px 0 0; /* Закруглення зверху */
+    font-size: 0.9rem;
+}
+
+.reply-preview-bar b {
+    color: #4da6ff; /* Красивий блакитний колір для нікнейму */
+}
+
+/* Кнопка скасування (хрестик) */
+.cancel-reply {
+    font-size: 1.2rem !important;
+    color: var(--gray-text); /* Твій сірий текст */
+    transition: color 0.2s;
+}
+
+.cancel-reply:hover {
+    color: #ff4d4d; /* Червоний при наведенні */
+}

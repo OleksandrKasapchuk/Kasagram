@@ -2,30 +2,44 @@
 
 {% block title %}Chats{% endblock %}
 {% load static %}
+{% load humanize %}
+{% load chat_tags %}
 
 {% block content %}
-<section class="chats-page p-3">
-    <h2 class="mb-4">Messages</h2>
+<section class="w-100 p-3">
     <div class="chat-list-container">
+        <h2 class="mb-4 text-center">Messages</h2>
         {% for item in chat_list_data %}
-            <a href="{% url 'chat:chat_detail' item.chat.pk %}" class="chat-card-link">
-                <article class="chat-item-card d-flex align-items-center p-3 mb-2">
+            <a href="{% url 'chat:chat_detail' item.chat.pk %}" class="chat-card-link" data-chat-id="{{ item.chat.id }}">
+                <article class="chat-item-card d-flex align-items-center p-3 mb-2" >
                     <div class="position-relative me-3">
                         <img src="{% if item.participant.avatar %}{{ item.participant.avatar.url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" 
-                             class="chat-list-avatar">
+                            class="chat-list-avatar">
                         <span id="status-{{ item.participant.username }}" 
-                              class="status-dot-mini {% if item.participant.is_online %}online{% else %}offline{% endif %}">
+                            class="status-dot-mini {% if item.participant.is_online %}online{% else %}offline{% endif %}">
                         </span>
                     </div>
 
                     <div class="chat-info flex-grow-1">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="chat-user-name">{{ item.participant.username }}</span>
-                            <span class="last-msg-time text-secondary small">
-                                {% if item.last_message %}
-                                    {{ item.last_message.timestamp|date:"H:i" }}
-                                {% endif %}
-                            </span>
+                            
+                            <section class="d-flex flex-column">
+                                <span class="last-msg-time text-secondary small d-flex">
+                                    {% if item.last_message %}
+                                        {% if request.user == item.last_message.user %}
+                                            <span class="material-symbols-outlined pe-2 fs-5 {% if item.last_message.is_read %}read{% endif %}">
+                                                {% if message.is_read %}done_all{% else %}check{% endif %}
+                                            </span>
+                                        {% endif %}
+                                        {{ item.last_message.timestamp|chat_date }}
+                                    {% endif %}
+                                </span>
+                                <span class="new-notification-icon" id="unread-count-{{ item.chat.id }}" 
+                                style="display: {% if item.unread_count > 0 %}inline{% else %}none{% endif %};">
+                                    {{ item.unread_count }}
+                                </span>
+                            </section>
                         </div>
                         <div class="last-msg-preview text-secondary text-truncate">
                             {% if item.last_message %}

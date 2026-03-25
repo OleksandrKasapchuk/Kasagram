@@ -16,10 +16,11 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    parent = models.ForeignKey("self", models.SET_NULL, null=True, blank=True, related_name="replies")
+
     class Meta:
         ordering = ['timestamp', 'pk']
     def __str__(self):
-        # Отримуємо ім'я автора
         username = self.user.username
         time_str = self.timestamp.strftime("%H:%M")
         return f"[{time_str}] {username}"

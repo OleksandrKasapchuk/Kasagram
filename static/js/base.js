@@ -32,7 +32,7 @@ globalSocket.onmessage = function(e) {
     }
     
 
-    if (data.type === 'new_notification') {
+    else if (data.type === 'new_notification') {
 
         const badge = document.getElementById('new-notification-icon');
         if (badge) {
@@ -51,8 +51,50 @@ globalSocket.onmessage = function(e) {
                 }, 2000);
             }
         }
+    } else if (data.action === "new_message") {
+    // 1. Оновлюємо бейдж (лічильник)
+    const badge = document.getElementById(`unread-count-${data.chat_id}`);
+    if (badge) {
+        // Якщо сервер прислав готове число — ставимо його, інакше +1
+        const currentCount = parseInt(badge.innerText) || 0;
+        badge.innerText = data.unread_count !== undefined ? data.unread_count : (currentCount + 1);
+        badge.style.display = 'inline-block';
+    }
+
+    // 2. Шукаємо картку чату
+    const chatCard = document.querySelector(`[data-chat-id="${data.chat_id}"]`);
+    const container = document.querySelector('.chat-list-container');
+
+    if (chatCard && container) {
+        // Оновлюємо текст повідомлення (прев'ю)
+        const preview = chatCard.querySelector('.last-msg-preview');
+        if (preview) {
+            preview.innerText = data.message;
+            preview.classList.remove('text-muted', 'italic'); // Прибираємо стиль "No messages yet"
+        } else {
+            console.log("no preview found")
+        }
+
+        // Оновлюємо час
+        const timeDisplay = chatCard.querySelector('.last-msg-time');
+        if (timeDisplay) {
+            timeDisplay.innerText = "Just now";
+        }
+
+        // Переміщуємо вгору списку (після заголовка h2)
+        const header = container.querySelector('h2');
+        if (header) {
+            header.after(chatCard); 
+        } else {
+            container.prepend(chatCard);
+        }
+        
+        // Можна додати ефект "підсвічування"
+        chatCard.classList.add('chat-item-new-anim');
+        setTimeout(() => chatCard.classList.remove('chat-item-new-anim'), 2000);
     }
 }
+};
 
 function injectNewNotification(container, data) {
     const newBox = document.createElement('h4');

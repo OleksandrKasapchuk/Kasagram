@@ -10,7 +10,7 @@
 }
 @media(max-width: 1000px) {
 	body {
-        position: relative; /* База для позиціювання */
+        position: relative;
         min-height: 100vh;
         margin: 0;
     }
@@ -51,7 +51,7 @@
     }
 
 	.profile-post-container {
-        width: 33%; /* Три в ряд */
+        width: 33%;
         height: auto; 
         padding: 2px;
     }
@@ -75,20 +75,18 @@
 @media(max-width:768px) {
 	.post-detail-container {
         flex-direction: column !important;
-        height: auto !important; /* Дозволяємо контейнеру рости вниз */
+        height: auto !important;
         max-height: none !important;
 		width: 100vw;
     }
 
-    /* Картинка на весь екран по ширині */
     .post-detail-media {
         width: 100% !important;
         height: auto !important;
-        max-height: 65vh !important; /* Фото не забере весь екран */
+        max-height: 65vh !important; 
         object-fit: contain;
-        background-color: #000;
     }
-    /* Права частина (яка тепер нижня) */
+    
     main.d-flex.flex-column {
         height: auto !important;
 		align-items: center;
@@ -98,7 +96,7 @@
 		width: 100%;
 	}
 
-	.comments { /* твій блок з коментарями */
+	.comments {
         overflow-y: visible !important; 
         height: auto !important;
 		width: 100%;
@@ -106,24 +104,22 @@
 		margin: 0;
     }
 
-	.msg-input {
-        position: sticky;
+	.msg-input-container {
         bottom: 70px;
         z-index: 100;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Сама текстова область */
     #message-content {
         height: 50px !important;
         min-height: 40px;
     }
+
 	.post-info {
 		padding-bottom: 100px;
 	}
 
 	.profile-header {
-        gap: 20px; /* Зменшуємо гігантські відступи */
+        gap: 20px;
         padding-left: 15px !important;
     }
 
@@ -170,11 +166,6 @@
 	.profile-post-container {
         width: 50%; 
         padding: 1px; /* Мінімальний розділювач між фото */
-    }
-
-    /* Ховаємо іконки лайків/коментів на мобілці, бо вони заважають тицяти на фото */
-    .post-hover-info {
-        display: none !important; 
     }
 
     /* Центруємо ім'я та кнопки під аватаркою */
