@@ -26,7 +26,7 @@ class RegisterView(CreateView):
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = CustomUser
     template_name = 'auth_system/user_info.html'
-    context_object_name = 'profile_user' # щоб не плутати з request.user
+    context_object_name = 'user'
 
 # Редагування профілю
 class UserUpdateView(LoginRequiredMixin, UpdateView):

@@ -18,28 +18,56 @@
 			{% endif %}
 			<ul id="comments" class="comments">
 				{% for comment in post.comments.all %}
-					<li id="comment-{{ comment.pk }}" class="d-flex comment-container mt-3 ">
-						<section class="d-flex flex-column " style="flex-grow: 1;">
-							<section class="d-flex">
-								<a href="{% url 'user-info' comment.user.pk %}">
-									<img 
-									{% if comment.user.avatar %}
-										src="{{ comment.user.avatar.url }}"
-									{% else %}
-										src="{% static 'images/default_avatar.jpg' %}" 
-									{% endif %} class="sidebar-avatar me-3">
-								</a>
-								<p><a href="{% url 'user-info' comment.user.pk %}"><b>{{ comment.user }}</b></a> {{comment.content}}</p>
-							</section>					
-							<p class="gray-text">{{ post.date_published.date }}</p>
-						</section>
-						{% if request.user == comment.user %}
-							<section>
-								<a href="{% url 'post:update-comment' comment.pk %}"><span class="material-symbols-outlined pointer">edit</span></a>
-								<span class="material-symbols-outlined pointer" onclick="deleteComment({{ comment.pk }})">delete</span>
-							</section>
-						{% endif %}
-					</li>
+					{% if not comment.parent %}
+						<li id="comment-{{ comment.pk }}" class="comment-container mt-3">
+							<div class="d-flex w-100">
+								<section class="d-flex flex-column" style="flex-grow: 1;">
+									<section class="d-flex">
+										<a href="{% url 'user-info' comment.user.pk %}">
+											<img src="{% if comment.user.avatar %}{{ comment.user.avatar.url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" class="sidebar-avatar me-3">
+										</a>
+										<p>
+											<a href="{% url 'user-info' comment.user.pk %}"><b>{{ comment.user }}</b></a> 
+											{{ comment.content }}
+										</p>
+									</section>                  
+									<div class="d-flex gap-3 align-items-center">
+										<small class="gray-text">{{ comment.date_published.date }}</small>
+										<small class="pointer text-secondary fw-bold" onclick="prepareReply({{ comment.pk }}, '{{ comment.user.username }}')">Reply</small>
+									</div>
+								</section>
+
+								{% if request.user == comment.user %}
+								<section>
+									<a href="{% url 'post:update-comment' comment.pk %}"><span class="material-symbols-outlined pointer">edit</span></a>
+									<span class="material-symbols-outlined pointer" onclick="deleteComment({{ comment.pk }})">delete</span>
+								</section>
+								{% endif %}
+							</div>
+
+							<article class="replies-list ms-3 mt-2 border-start ps-3 d-flex flex-column" style="border-color: #333 !important;">
+								{% for reply in comment.replies.all %}
+									<article class="d-flex" id="comment-{{ reply.pk }}">
+										<section  class="d-flex flex-column mb-2" style="flex-grow: 1;">
+											<section class="d-flex">
+												<a href="{% url 'user-info' reply.user.pk %}">
+													<img src="{% if reply.user.avatar %}{{ reply.user.avatar.url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" class="sidebar-avatar me-3" style="width: 25px; height: 25px;">
+												</a>
+												<p><a href="{% url 'user-info' reply.user.pk %}"><b>{{ reply.user }}</b></a> {{ reply.content }}</p>
+											</section>                  
+											<small class="gray-text">{{ reply.date_published.date }}</small>
+										</section>
+										{% if request.user == reply.user %}
+											<section>
+												<a href="{% url 'post:update-comment' reply.pk %}"><span class="material-symbols-outlined pointer">edit</span></a>
+												<span class="material-symbols-outlined pointer" onclick="deleteComment({{ reply.pk }})">delete</span>
+											</section>
+										{% endif %}
+									</article>
+								{% endfor %}
+							</article>
+						</li>
+					{% endif %}
 				{% endfor %}
 			</ul>
 		<section>
@@ -57,7 +85,19 @@
 			<p class="gray-text">{{ post.date_published.date }}</p>
 		</section>
 		
-		<section class="msg-input d-flex"><textarea id="message-content" placeholder="Add a comment..."></textarea><span class="material-symbols-outlined pointer p-3 pt-2" onclick=SendComment({{post.pk}})>Send</span></section>
+		<section class="msg-input-container"> 
+			<div id="reply-preview" class="reply-preview-bar d-none">
+				<div class="d-flex justify-content-between align-items-center w-100">
+					<span>Replying to <b id="reply-to-username">@username</b></span>
+					<span class="material-symbols-outlined pointer cancel-reply" onclick="cancelReply()">close</span>
+				</div>
+			</div>
+
+			<section class="msg-input d-flex">
+				<textarea id="message-content" placeholder="Add a comment..."></textarea>
+				<span class="material-symbols-outlined pointer p-3 pt-2" onclick="SendComment({{post.pk}})">Send</span>
+			</section>
+		</section>
 	</article>
 </article>
 
