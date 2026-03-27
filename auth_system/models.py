@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
 from django.utils import timezone
 
+
 class CustomUser(AbstractUser):
     bio = models.TextField(null=True, blank=True)
     avatar = CloudinaryField("image")

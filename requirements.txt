@@ -14,7 +14,9 @@ daphne==4.2.1
 dj-database-url==3.0.1
 Django==5.2.7
 django-cloudinary-storage==0.3.0
+django-rest-framework==0.1.0
 django-widget-tweaks==1.5.1
+djangorestframework==3.17.1
 gunicorn==22.0.0
 hyperlink==21.0.0
 idna==3.10

@@ -1,12 +1,15 @@
 from django.shortcuts import redirect, get_object_or_404
-from django.urls import reverse_lazy
 from django.contrib.humanize.templatetags.humanize import naturaltime
-from .models import *
 from django.views.generic import View, ListView, DetailView, UpdateView, DeleteView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 from django.http import JsonResponse
+from .serializers import *
 from .mixins import *
 from .forms import *
+from .models import *
+
+
 
 
 class Index(ListView):
