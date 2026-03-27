@@ -53,6 +53,52 @@ messageInput.addEventListener('input', () => {
     }, 2000);
 });
 
+let currentReplyId = null;
+
+function prepareMessageReply(messageId, username, content) {
+    currentReplyId = messageId;
+    document.getElementById('reply-parent-id').value = messageId;
+    document.getElementById('reply-to-username').innerText = `@${username}`;
+    document.getElementById('reply-to-content').innerText = content;
+    
+    const preview = document.getElementById('reply-preview');
+    preview.classList.remove('d-none');
+    document.getElementById('message-content').focus();
+}
+
+function cancelMessageReply() {
+    currentReplyId = null;
+    document.getElementById('reply-parent-id').value = "";
+    document.getElementById('reply-preview').classList.add('d-none');
+}
+
+// Онови функцію SendMessage (додай parent_id в JSON)
+function SendMessage() {
+    const input = document.getElementById('message-content');
+    const content = input.value.trim();
+    const parentId = document.getElementById('reply-parent-id').value;
+
+    if (content !== "") {
+        chatSocket.send(JSON.stringify({
+            'message': content,
+            'username': window.ChatConfig.currentUser,
+            'parent_id': parentId ? parentId : null // ПЕРЕДАЄМО ID БАТЬКА
+        }));
+        
+        input.value = '';
+        cancelMessageReply(); // Скидаємо реплай після відправки
+    }
+}
+
+// Додаткова фіча: скрол до оригінального повідомлення при кліку на реплай
+function scrollToMessage(id) {
+    const element = document.getElementById(`message-${id}`);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.classList.add('highlight-message');
+        setTimeout(() => element.classList.remove('highlight-message'), 2000);
+    }
+}
 
 chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
@@ -79,11 +125,27 @@ chatSocket.onmessage = function(e) {
 
         const msgTime = data.timestamp || new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
+        // ПЕРЕВІРКА: Чи є в повідомленні реплай?
+        let replyHtml = '';
+        console.log("parent: " + data.parent_content)
+        if (data.parent_content) {
+            replyHtml = `
+                <div class="reply-in-message border-start ps-2 mb-1" 
+                     style="border-left: 3px solid #007bff !important; background: rgba(0,0,0,0.05); cursor: pointer;"
+                     onclick="scrollToMessage(${data.parent_id || ''})">
+                    <small class="fw-bold d-block text-primary">${data.parent_username}</small>
+                    <small class="text-truncate d-block text-muted">${data.parent_content}</small>
+                </div>
+            `;
+        }
+
         const messageHtml = `
             <article class="d-flex mx-3 mb-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}" id="message-${data.message_id}">
-                <div class="message-wrapper position-relative ${isMe ? 'sent' : 'received'}">
+                <div class="message-wrapper position-relative ${isMe ? 'sent' : 'received'}"
+                     oncontextmenu="prepareMessageReply(${data.message_id}, '${data.username}', '${data.parent_content.substring(0, 30)}'); return false;">
+                    
                     <div class="message-content px-3 py-2">
-                        <span class="message-text">${data.message}</span>
+                        ${replyHtml} <span class="message-text">${data.message}</span>
                         <span class="status-spacer"></span> 
                         
                         <div class="message-meta-container">
@@ -94,12 +156,19 @@ chatSocket.onmessage = function(e) {
                         </div>
                     </div>
                 </div>
-                ${isMe ? `
-                    <button onclick="deleteMessage(${data.message_id})" 
-                            class="material-symbols-outlined pointer p-2 delete-btn align-self-center border-0 bg-transparent">
-                        delete
-                    </button>
-                ` : ''}
+                
+                <div class="message-actions d-flex align-items-center">
+                    <span class="material-symbols-outlined pointer text-secondary small mx-1" 
+                          onclick="prepareMessageReply(${data.message_id}, '${data.username}', '${data.message.substring(0, 30)}')">
+                        reply
+                    </span>
+                    ${isMe ? `
+                        <button onclick="deleteMessage(${data.message_id})" 
+                                class="material-symbols-outlined pointer p-2 delete-btn align-self-center border-0 bg-transparent">
+                            delete
+                        </button>
+                    ` : ''}
+                </div>
             </article>
         `;
 
@@ -107,18 +176,6 @@ chatSocket.onmessage = function(e) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 };
-
-function SendMessage() {
-    const content = messageInput.value.trim();
-
-    if (content !== "") {
-        chatSocket.send(JSON.stringify({
-            'message': content,
-            'username': currentUser
-        }));
-        messageInput.value = '';
-    }
-}
 
 // Обробка натискання Enter (без Shift)
 messageInput.addEventListener('keydown', function(e) {

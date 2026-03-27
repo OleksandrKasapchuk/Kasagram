@@ -29,9 +29,16 @@
     <section id="chat-messages" class="d-flex flex-column">
         {% for message in messages %}
             <article class="d-flex mx-3 mb-2 {% if request.user == message.user %}flex-row-reverse{% else %}flex-row{% endif %}" id="message-{{ message.pk }}">
-                <div class="message-wrapper {% if request.user == message.user %}sent{% else %}received{% endif %}">
+                <div class="message-wrapper {% if request.user == message.user %}sent{% else %}received{% endif %}"
+                oncontextmenu="prepareMessageReply({{ message.pk }}, '{{ message.user.username }}', '{{ message.content|truncatechars:30 }}'); return false;">
                     
                     <div class="message-content">
+                        {% if message.parent %}
+                            <div class="reply-in-message border-start ps-2 mb-1" style="border-left: 3px solid #007bff !important; background: rgba(0,0,0,0.05); cursor: pointer;" onclick="scrollToMessage({{ message.parent.pk }})">
+                                <small class="fw-bold d-block">{{ message.parent.user.username }}</small>
+                                <small class="text-truncate d-block">{{ message.parent.content }}</small>
+                            </div>
+                        {% endif %}
                         <span class="message-text">{{ message.content }}</span>
                         <span class="status-spacer"></span>
                         <div class="message-meta-container">
@@ -48,17 +55,33 @@
                     </div>
                 </div>
 
-                {% if request.user == message.user %}
-                    <span onclick="deleteMessage({{ message.pk }})" class="delete-btn pointer material-symbols-outlined align-self-center">
-                        delete
+                <div class="message-actions d-flex align-items-center">
+                    <span class="material-symbols-outlined pointer text-secondary small me-1" 
+                        onclick="prepareMessageReply({{ message.pk }}, '{{ message.user.username }}', '{{ message.content|truncatechars:30 }}')">
+                        reply
                     </span>
-                {% endif %}
+                    
+                    {% if request.user == message.user %}
+                        <span onclick="deleteMessage({{ message.pk }})" class="delete-btn pointer material-symbols-outlined">delete</span>
+                    {% endif %}
+                </div>
             </article>
         {% endfor %}
     </section>
-    <section class="msg-input d-flex m-2">
-        <textarea id="message-content" placeholder="Type a message..."></textarea>
-        <span class="material-symbols-outlined pointer p-3 pt-2" onclick="SendMessage()">Send</span>
+    <section class="msg-input-container m-2">
+        <div id="reply-preview" class="reply-preview-bar d-none border-bottom p-2 mb-1 d-flex justify-content-between align-items-center">
+            <div class="border-start ps-2" style="border-left: 3px solid #007bff !important;">
+                <span class="small d-block text-primary">Replying to <b id="reply-to-username">@username</b></span>
+                <span id="reply-to-content" class="small text-truncate d-block" style="max-width: 250px;">Text...</span>
+            </div>
+            <span class="material-symbols-outlined pointer cancel-reply" onclick="cancelMessageReply()">close</span>
+        </div>
+
+        <section class="msg-input d-flex">
+            <input type="hidden" id="reply-parent-id" value="">
+            <textarea id="message-content" placeholder="Type a message..."></textarea>
+            <span class="material-symbols-outlined pointer p-3 pt-2" onclick="SendMessage()">Send</span>
+        </section>
     </section>
 </article>
 

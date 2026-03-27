@@ -61,12 +61,24 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'widget_tweaks',
+    'rest_framework',
+    'rest_framework.authtoken',
     'core',
 	'auth_system',
 	'post_system',
     'chat',
 	'notifications',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication', # залишаємо для браузера
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated', # закриваємо API від анонімів
+    ],
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -122,7 +134,6 @@ db_url = os.environ.get("DATABASE_URL", "")
 is_migrating = 'migrate' in sys.argv
 
 if is_migrating and db_url:
-    # Замінюємо порт 6543 на 5432 тільки для міграцій
     db_url = db_url.replace(":6543", ":5432")
 
 if db_url:
@@ -198,7 +209,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'auth_system.CustomUser'
 
-LOGIN_URL = "/login/"
+LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 

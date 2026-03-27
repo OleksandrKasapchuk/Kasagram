@@ -63,7 +63,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
             message_text = data['message']
             username = data['username']
-            msg_obj = await self.save_message(username, self.room_name, message_text)
+            parent_id = data.get('parent_id')
+            msg_data = await self.save_message(username, self.room_name, message_text, parent_id)
 
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -71,8 +72,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'type': 'chat_message',
                     'message': message_text,
                     'username': username,
-                    'message_id': msg_obj.id,
-                    'timestamp': msg_obj.timestamp.strftime('%H:%M')
+                    'message_id': msg_data['id'],
+                    'timestamp': msg_data['timestamp'].strftime('%H:%M'),
+                    'parent_content': msg_data['parent_content'],
+                    'parent_username': msg_data['parent_username']
                 }
             )
             recipient = await self.get_recipient(self.room_name)
@@ -105,6 +108,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message_id': event['message_id'],
             'is_me': is_me,
             'timestamp': event['timestamp'],
+            'parent_content': event.get('parent_content'),
+            'parent_username': event.get('parent_username'),
+            'parent_id': event.get('parent_id'),
         }))
     
     @database_sync_to_async
@@ -138,10 +144,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return False
     
     @database_sync_to_async
-    def save_message(self, username, chat_id, message):
+    def save_message(self, username, chat_id, message, parent_id=None):
         user = CustomUser.objects.get(username=username)
         chat = Chat.objects.get(id=chat_id)
-        return Message.objects.create(user=user, chat=chat, content=message)
+        parent = None
+        
+        if parent_id:
+            try:
+                parent = Message.objects.get(id=parent_id)
+            except Message.DoesNotExist:
+                parent = None
+                
+        msg = Message.objects.create(user=user, chat=chat, content=message, parent=parent)
+        
+        # Створюємо словник з даними, щоб не робити запитів у асинхронному коді
+        result = {
+            'id': msg.id,
+            'timestamp': msg.timestamp,
+            'parent_content': msg.parent.content if msg.parent else None,
+            'parent_username': msg.parent.user.username if msg.parent else None,
+        }
+        return result
     
     async def messages_read_update(self, event):
         is_me = self.scope['user'].username == event['username']
