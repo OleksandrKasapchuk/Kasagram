@@ -23,11 +23,16 @@ class PostSerializer(serializers.ModelSerializer):
         return None
 
     def get_is_liked(self, obj):
-        user = self.context.get('request').user
-        if user.is_authenticated:
-            return obj.likes.filter(user=user).exists()
+        # 1. Беремо request безпечно через .get()
+        request = self.context.get('request')
+        
+        # 2. Перевіряємо, чи взагале є request і чи є в ньому юзер
+        if request and request.user and request.user.is_authenticated:
+            return obj.likes.filter(user=request.user).exists()
+        
+        # Якщо запиту немає (наприклад, при генерації профілю без передачі context)
+        # або юзер не залогінений — повертаємо False
         return False
-
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
