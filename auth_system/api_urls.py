@@ -1,8 +1,12 @@
 from django.urls import path
-from post_system.api_views import *
-from rest_framework.authtoken import views as auth_views
+from .api_views import *
 
 
 urlpatterns = [
-    path('token-auth/', auth_views.obtain_auth_token),
+    # Для логіну (Retrofit каже @POST("login/"))
+    path('login/', CustomAuthToken.as_view(), name='api_login'),
+    
+    # Для реєстрації (Retrofit каже @POST("register/"))
+    path('register/', api_register, name='api_register'),
+    path('user-info/<int:id>/', get_user_detail, name='user_detail'),
 ]
