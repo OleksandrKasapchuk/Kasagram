@@ -1,18 +1,9 @@
-from django.urls import path
-from chat.api_views import ChatListAPIView, MessageListAPIView
-from post_system.api_views import *
-from rest_framework.authtoken import views as auth_views
+from django.urls import path, include
 
 
 urlpatterns = [
-    path('ping/', PingView.as_view(), name="ping"),
-    
-    path('token-auth/', auth_views.obtain_auth_token),
-    
-    # Чати
-    path('chats/', ChatListAPIView.as_view()),
-    path('messages/<int:chat_id>/', MessageListAPIView.as_view()),
-    
-    # Пости
-    path('posts/', PostListAPIView.as_view()),
+    path('', include("post_system.api_urls")),
+    path('chat/', include("chat.api_urls")),
+    path('', include("notifications.api_urls")),
+    path('', include("auth_system.api_urls")),
 ]
