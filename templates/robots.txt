@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /admin/  # Щоб гугл не лазив в адмінку Django
+Disallow: /admin/
 
 Sitemap: https://kasagram.onrender.com/sitemap.xml
