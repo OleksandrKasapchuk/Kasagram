@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from .models import CustomUser
 from rest_framework.permissions import IsAuthenticated
-from .serializers import UserDetailSerializer
+from .serializers import *
 from django.shortcuts import  get_object_or_404
 
 
@@ -27,18 +27,24 @@ class CustomAuthToken(ObtainAuthToken):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def api_register(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
+    # 1. Віддаємо дані серіалізатору
+    serializer = RegisterSerializer(data=request.data)
     
-    # Створюємо юзера (якщо його нема)
-    user = CustomUser.objects.create_user(username=username, password=password)
-    token, _ = Token.objects.get_or_create(user=user)
+    # 2. Валідація! Якщо юзернейм вже є — DRF сам видасть помилку 400
+    if serializer.is_valid():
+        user = serializer.save() # Це викличе метод create() в серіалізаторі
+        
+        # 3. Створюємо токен для нового юзера
+        token, _ = Token.objects.get_or_create(user=user)
+        
+        return Response({
+            'token': token.key, 
+            'user_id': user.id,
+            'username': user.username
+        }, status=201) # 201 Created — правильний статус для реєстрації
     
-    return Response({
-        'token': token.key, 
-        'user_id': user.id
-    })
-
+    # Якщо дані "криві" — повертаємо помилки (наприклад: "цей email вже зайнятий")
+    return Response(serializer.errors, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated]) # Тільки залогінені бачать профілі
