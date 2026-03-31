@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Message, Chat
 from auth_system.serializers import UserSerializer
 from django.urls import reverse
-
+from .templatetags import chat_tags
 
 class MessageSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -74,9 +74,9 @@ class ChatSerializer(serializers.ModelSerializer):
         if msg:
             return {
                 'content': msg.content,
-                'timestamp': msg.timestamp,
+                'formatted_time': chat_tags.chat_date(msg.timestamp),
                 'is_read': msg.is_read,
                 # Можна додати прапорець, щоб знати, чи це я написав останній
-                'is_me': msg.user == self.context['request'].user if 'request' in self.context else False
+                'is_user_message': msg.user == self.context['request'].user if 'request' in self.context else False
             }
         return None
