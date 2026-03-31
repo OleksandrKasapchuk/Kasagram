@@ -133,8 +133,8 @@ chatSocket.onmessage = function(e) {
                 <div class="reply-in-message border-start ps-2 mb-1" 
                      style="border-left: 3px solid #007bff !important; background: rgba(0,0,0,0.05); cursor: pointer;"
                      onclick="scrollToMessage(${data.parent_id || ''})">
-                    <small class="fw-bold d-block text-primary">${data.parent_username}</small>
-                    <small class="text-truncate d-block text-muted">${data.parent_content}</small>
+                    <small class="fw-bold d-block">${data.parent_username}</small>
+                    <small class="text-truncate d-block">${data.parent_content}</small>
                 </div>
             `;
         }
@@ -142,7 +142,7 @@ chatSocket.onmessage = function(e) {
         const messageHtml = `
             <article class="d-flex mx-3 mb-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}" id="message-${data.message_id}">
                 <div class="message-wrapper position-relative ${isMe ? 'sent' : 'received'}"
-                     oncontextmenu="prepareMessageReply(${data.message_id}, '${data.username}', '${data.parent_content.substring(0, 30)}'); return false;">
+                     oncontextmenu="prepareMessageReply(${data.message_id}, '${data.username}', '${(data.parent_content || "").substring(0, 30)}'); return false;">
                     
                     <div class="message-content px-3 py-2">
                         ${replyHtml} <span class="message-text">${data.message}</span>
@@ -156,17 +156,13 @@ chatSocket.onmessage = function(e) {
                         </div>
                     </div>
                 </div>
-                
-                <div class="message-actions d-flex align-items-center">
+                <div class="d-flex align-items-center">
                     <span class="material-symbols-outlined pointer text-secondary small mx-1" 
                           onclick="prepareMessageReply(${data.message_id}, '${data.username}', '${data.message.substring(0, 30)}')">
                         reply
                     </span>
                     ${isMe ? `
-                        <button onclick="deleteMessage(${data.message_id})" 
-                                class="material-symbols-outlined pointer p-2 delete-btn align-self-center border-0 bg-transparent">
-                            delete
-                        </button>
+                        <span onclick="deleteMessage(${data.message_id})" class="delete-btn pointer material-symbols-outlined">delete</span>
                     ` : ''}
                 </div>
             </article>
@@ -240,7 +236,7 @@ function renderOlderMessages(messages){
 
     let htmlContent = '';
     messages.forEach(msg => {
-        const isMe = msg.is_user_message; // Беремо з твого JSON у в'юсі
+        const isMe = msg.is_user_message;
         const msgHtml = `
             <article class="d-flex mx-3 mb-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}" id="message-${msg.id}">
                 <div class="message-wrapper position-relative ${isMe ? 'sent' : 'received'}">
@@ -248,16 +244,20 @@ function renderOlderMessages(messages){
                         <span class="message-text">${msg.content}</span>
                         <span class="status-spacer"></span> 
                         <div class="message-meta-container">
-                            <time class="message-time">${msg.timestamp || ''}</time>
+                            <time class="message-time">${msg.formatted_time || ''}</time>
                             ${isMe ? '<span class="material-symbols-outlined status-icon">check</span>' : ''}
                         </div>
                     </div>
                 </div>
-                ${isMe ? `
-                    <button onclick="deleteMessage(${msg.id})" 
-                            class="material-symbols-outlined pointer p-2 delete-btn align-self-center border-0 bg-transparent">
-                        delete
-                    </button>` : ''}
+                <div class="d-flex align-items-center">
+                    <span class="material-symbols-outlined pointer text-secondary small mx-1" 
+                          onclick="prepareMessageReply(${msg.id}, '${msg.username}', '${msg.content.substring(0, 30)}')">
+                        reply
+                    </span>
+                    ${isMe ? `
+                        <span onclick="deleteMessage(${msg.id})" class="delete-btn pointer material-symbols-outlined">delete</span>
+                    ` : ''}
+                </div>
             </article>
         `;
         htmlContent += msgHtml;

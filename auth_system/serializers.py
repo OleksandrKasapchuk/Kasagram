@@ -2,6 +2,26 @@ from rest_framework import serializers
 from .models import CustomUser, Subscription
 
 
+class RegisterSerializer(serializers.ModelSerializer):
+    # Пароль тільки для запису, ми не хочемо повертать його в JSON
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'password', 'email', 'first_name', 'last_name', 'bio']
+
+    def create(self, validated_data):
+        # Використовуємо спеціальний метод моделі для створення юзера з хешованим паролем
+        user = CustomUser.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password'],
+            email=validated_data.get('email', ''),
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            bio=validated_data.get('bio', '')
+        )
+        return user
+
 
 class UserDetailSerializer(serializers.ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
@@ -24,8 +44,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
         if obj.avatar:
             # Повертаємо пряме посилання на картинку в Cloudinary
             return obj.avatar.url
-        # Можна повернути дефолтну картинку, якщо аватара немає
-        return "https://res.cloudinary.com/your_cloud_name/image/upload/v1/default_avatar.jpg"
+        return None
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,7 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
             # Повертаємо пряме посилання на картинку в Cloudinary
             return obj.avatar.url
         # Можна повернути дефолтну картинку, якщо аватара немає
-        return "https://res.cloudinary.com/your_cloud_name/image/upload/v1/default_avatar.jpg"
+        return None
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):

@@ -9,42 +9,42 @@
 <section class="w-100 p-3">
     <div class="chat-list-container">
         <h2 class="mb-4 text-center">Messages</h2>
-        {% for item in chat_list_data %}
-            <a href="{% url 'chat:chat_detail' item.chat.pk %}" class="chat-card-link" data-chat-id="{{ item.chat.id }}">
+        {% for chat in chat_list_data %}
+            <a href="{% url 'chat:chat_detail' chat.id %}" class="chat-card-link" data-chat-id="{{ chat.id }}">
                 <article class="chat-item-card d-flex align-items-center p-3 mb-2" >
                     <div class="position-relative me-3">
-                        <img src="{% if item.participant.avatar %}{{ item.participant.avatar.url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" 
+                        <img src="{% if chat.participant.avatar_url %}{{ chat.participant.avatar_url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" 
                             class="chat-list-avatar">
-                        <span id="status-{{ item.participant.username }}" 
-                            class="status-dot-mini {% if item.participant.is_online %}online{% else %}offline{% endif %}">
+                        <span id="status-{{ chat.participant.username }}" 
+                            class="status-dot-mini {% if chat.participant.is_online %}online{% else %}offline{% endif %}">
                         </span>
                     </div>
 
                     <div class="chat-info flex-grow-1">
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="chat-user-name">{{ item.participant.username }}</span>
+                            <span class="chat-user-name">{{ chat.participant.username }}</span>
                             
                             <section class="d-flex flex-column">
                                 <span class="last-msg-time text-secondary small d-flex">
-                                    {% if item.last_message %}
-                                        {% if request.user == item.last_message.user %}
-                                            <span class="material-symbols-outlined pe-2 fs-5 {% if item.last_message.is_read %}read{% endif %}">
+                                    {% if chat.last_message %}
+                                        {% if request.user == chat.last_message.user %}
+                                            <span class="material-symbols-outlined pe-2 fs-5 {% if chat.last_message.is_read %}read{% endif %}">
                                                 {% if message.is_read %}done_all{% else %}check{% endif %}
                                             </span>
                                         {% endif %}
-                                        {{ item.last_message.timestamp|chat_date }}
+                                        {{ chat.last_message.timestamp|chat_date }}
                                     {% endif %}
                                 </span>
-                                <span class="new-notification-icon" id="unread-count-{{ item.chat.id }}" 
-                                style="display: {% if item.unread_count > 0 %}inline{% else %}none{% endif %};">
-                                    {{ item.unread_count }}
+                                <span class="new-notification-icon" id="unread-count-{{ chat.id }}" 
+                                style="display: {% if chat.unread_count > 0 %}inline{% else %}none{% endif %};">
+                                    {{ chat.unread_count }}
                                 </span>
                             </section>
                         </div>
                         <div class="last-msg-preview text-secondary text-truncate">
-                            {% if item.last_message %}
-                                {% if item.last_message.user == request.user %}You: {% endif %}
-                                {{ item.last_message.content }}
+                            {% if chat.last_message %}
+                                {% if chat.last_message.user == request.user %}You: {% endif %}
+                                {{ chat.last_message.content }}
                             {% else %}
                                 <span class="text-muted italic">No messages yet</span>
                             {% endif %}
