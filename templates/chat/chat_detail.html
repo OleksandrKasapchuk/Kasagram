@@ -28,45 +28,45 @@
 
     <section id="chat-messages" class="d-flex flex-column">
         {% for message in messages %}
-            <article class="d-flex mx-3 mb-2 {% if request.user == message.user %}flex-row-reverse{% else %}flex-row{% endif %}" id="message-{{ message.pk }}">
-                <div class="message-wrapper {% if request.user == message.user %}sent{% else %}received{% endif %}"
-                oncontextmenu="prepareMessageReply({{ message.pk }}, '{{ message.user.username }}', '{{ message.content|truncatechars:30 }}'); return false;">
-                    
-                    <div class="message-content">
-                        {% if message.parent %}
-                            <div class="reply-in-message border-start ps-2 mb-1" style="border-left: 3px solid #007bff !important; background: rgba(0,0,0,0.05); cursor: pointer;" onclick="scrollToMessage({{ message.parent.pk }})">
-                                <small class="fw-bold d-block">{{ message.parent.user.username }}</small>
-                                <small class="text-truncate d-block">{{ message.parent.content }}</small>
-                            </div>
-                        {% endif %}
-                        <span class="message-text">{{ message.content }}</span>
-                        <span class="status-spacer"></span>
-                        <div class="message-meta-container">
-                            <time datetime="{{ message.timestamp|date:'Y-m-d H:i' }}" class="message-time">
-                                {{ message.timestamp|date:"H:i" }}
-                            </time>
-
-                            {% if request.user == message.user %}
-                                <span class="material-symbols-outlined status-icon {% if message.is_read %}read{% endif %}">
-                                    {% if message.is_read %}done_all{% else %}check{% endif %}
-                                </span>
-                            {% endif %}
+        <article class="d-flex mx-3 mb-2 {% if message.is_user_message %}flex-row-reverse{% else %}flex-row{% endif %}" id="message-{{ message.id }}">
+            <div class="message-wrapper {% if message.is_user_message %}sent{% else %}received{% endif %}"
+                oncontextmenu="prepareMessageReply({{ message.id }}, '{{ message.username }}', '{{ message.content|truncatechars:30 }}'); return false;">
+                
+                <div class="message-content">
+                    {% if message.parent_content %}
+                        <div class="reply-in-message border-start ps-2 mb-1 pointer" style="border-left: 3px solid #007bff !important; background: rgba(0,0,0,0.05);" onclick="scrollToMessage({{ message.parent.pk }})">
+                            <small class="fw-bold d-block">{{ message.parent_username }}</small>
+                            <small class="text-truncate d-block">{{ message.parent_content }}</small>
                         </div>
+                    {% endif %}
+
+                    <span class="message-text">{{ message.content }}</span>
+                    <span class="status-spacer"></span>
+                    
+                    <div class="message-meta-container">
+                        <time class="message-time" datetime="{{ message.timestamp|date:'Y-m-d H:i' }}">{{ message.timestamp }}</time>
+
+                        {% if message.is_user_message %}
+                            <span class="material-symbols-outlined status-icon {% if message.is_read %}read{% endif %}">
+                                {% if message.is_read %}done_all{% else %}check{% endif %}
+                            </span>
+                        {% endif %}
                     </div>
                 </div>
-
-                <div class="message-actions d-flex align-items-center">
-                    <span class="material-symbols-outlined pointer text-secondary small me-1" 
-                        onclick="prepareMessageReply({{ message.pk }}, '{{ message.user.username }}', '{{ message.content|truncatechars:30 }}')">
-                        reply
-                    </span>
-                    
-                    {% if request.user == message.user %}
-                        <span onclick="deleteMessage({{ message.pk }})" class="delete-btn pointer material-symbols-outlined">delete</span>
-                    {% endif %}
-                </div>
-            </article>
-        {% endfor %}
+            </div>
+            
+            <div class="d-flex align-items-center">
+                <span class="material-symbols-outlined pointer text-secondary small mx-1" 
+                    onclick="prepareMessageReply({{ message.id }}, '{{ message.username }}', '{{ message.content|truncatechars:30 }}')">
+                    reply
+                </span>
+                
+                {% if message.is_user_message %}
+                    <span onclick="deleteMessage({{ message.id }})" class="delete-btn pointer material-symbols-outlined">delete</span>
+                {% endif %}
+            </div>
+        </article>
+    {% endfor %}
     </section>
     <section class="msg-input-container m-2">
         <div id="reply-preview" class="reply-preview-bar d-none border-bottom p-2 mb-1 d-flex justify-content-between align-items-center">

@@ -7,8 +7,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from auth_system.models import CustomUser
 from .models import Chat, Message
-from django.templatetags.static import static
 from post_system.mixins import *
+from .mixins import ChatMessageMixin
 
 
 class ChatListView(LoginRequiredMixin, ListView):
@@ -41,19 +41,23 @@ class ChatListView(LoginRequiredMixin, ListView):
         return context
 
 
-class ChatDetailView(LoginRequiredMixin, View):
+class ChatDetailView(LoginRequiredMixin, ChatMessageMixin , View):
     def get(self, request, pk):
         chat = get_object_or_404(Chat, id=pk)
         if request.user not in chat.participants.all():
             return redirect('chat:chat_list')
 
         participant = chat.participants.exclude(id=request.user.pk).first()
-        initial_messages = Message.objects.filter(chat=chat).select_related('user').order_by('-pk')[:20]
         
+        messages_data = self.get_serialized_messages(chat, request)
+        
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'messages': messages_data})
+
         context = {
             'chat': chat,
             'participant': participant,
-            'messages': reversed(initial_messages) # Розвертаємо список для шаблону
+            'messages': messages_data # Тепер тут вже готові словники, а не QuerySet
         }
         return render(request, 'chat/chat_detail.html', context)
 
@@ -78,7 +82,6 @@ class ChatDetailView(LoginRequiredMixin, View):
                     'success': True,
                     'username': request.user.username,
                     'content': message.content,
-                    'avatar_url': request.user.avatar.url if request.user.avatar.url else "../static/images/default_avatar.png"
                 })
             return redirect('chat:chat_detail', pk=chat.pk)
         except Exception as e:
@@ -87,35 +90,18 @@ class ChatDetailView(LoginRequiredMixin, View):
             raise e
 
 
-class ChatMessagesView(LoginRequiredMixin, View):
+class ChatMessagesView(LoginRequiredMixin, ChatMessageMixin, View):
     def get(self, request, pk):
         chat = get_object_or_404(Chat, id=pk)
         if request.user not in chat.participants.all():
             return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
         
         oldest_id = request.GET.get('oldest_id') 
-        messages = Message.objects.filter(chat=chat).select_related('user')
-        
-        if oldest_id and oldest_id.isdigit():
-            messages = messages.filter(pk__lt=oldest_id).order_by('-pk')[:20]
-        else:
-            messages = messages.order_by('-pk')[:20]
+        messages_data = self.get_serialized_messages(chat, request, oldest_id=oldest_id)
             
-        # Формуємо список даних
-        data_list = []
-        for message in messages:
-            data_list.append({
-                'id': message.pk,
-                'content': message.content,
-                'is_user_message': message.user == request.user,
-                'timestamp': message.timestamp.strftime('%H:%M'),
-                'delete_url': reverse_lazy('chat:delete_message', args=[message.pk])
-            })
-        
-        # Оскільки ми брали [:30] з order_by('-pk'), повідомлення йдуть 
         return JsonResponse({
             'success': True, 
-            'messages': data_list[::-1]
+            'messages': messages_data
         })
 
 @login_required
