@@ -44,7 +44,7 @@
                     <span class="status-spacer"></span>
                     
                     <div class="message-meta-container">
-                        <time class="message-time" datetime="{{ message.timestamp|date:'Y-m-d H:i' }}">{{ message.timestamp }}</time>
+                        <time class="message-time" datetime="{{ message.timestamp|date:'Y-m-d H:i' }}">{{ message.formatted_time }}</time>
 
                         {% if message.is_user_message %}
                             <span class="material-symbols-outlined status-icon {% if message.is_read %}read{% endif %}">

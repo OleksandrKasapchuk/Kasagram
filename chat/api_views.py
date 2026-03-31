@@ -18,16 +18,3 @@ class ChatListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return Chat.objects.filter(participants=self.request.user)
-
-
-class MessageListAPIView(generics.ListAPIView):
-    serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = ChatPagination  
-
-    def get_queryset(self):
-        chat_id = self.kwargs['chat_id']
-        return Message.objects.filter(chat_id=chat_id).order_by('timestamp')
-    
-
-

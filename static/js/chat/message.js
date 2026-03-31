@@ -236,7 +236,7 @@ function renderOlderMessages(messages){
 
     let htmlContent = '';
     messages.forEach(msg => {
-        const isMe = msg.is_user_message; // Беремо з твого JSON у в'юсі
+        const isMe = msg.is_user_message;
         const msgHtml = `
             <article class="d-flex mx-3 mb-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}" id="message-${msg.id}">
                 <div class="message-wrapper position-relative ${isMe ? 'sent' : 'received'}">
@@ -244,7 +244,7 @@ function renderOlderMessages(messages){
                         <span class="message-text">${msg.content}</span>
                         <span class="status-spacer"></span> 
                         <div class="message-meta-container">
-                            <time class="message-time">${msg.timestamp || ''}</time>
+                            <time class="message-time">${msg.formatted_time || ''}</time>
                             ${isMe ? '<span class="material-symbols-outlined status-icon">check</span>' : ''}
                         </div>
                     </div>
