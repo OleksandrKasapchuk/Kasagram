@@ -9,12 +9,13 @@ class PostSerializer(serializers.ModelSerializer):
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
     comments_count = serializers.IntegerField(source='comments.count', read_only=True)
     is_liked = serializers.SerializerMethodField()
-
+    is_owner = serializers.SerializerMethodField()
+    
     class Meta:
         model = Post
         fields = [
             'id', 'user', 'content', 'media_url', 'media',
-            'date_published', 'likes_count', 'comments_count', 'is_liked'
+            'date_published', 'likes_count', 'comments_count', 'is_liked', 'is_owner'
         ]
         extra_kwargs = {
             'media': {'write_only': True}
@@ -35,6 +36,12 @@ class PostSerializer(serializers.ModelSerializer):
         
         # Якщо запиту немає (наприклад, при генерації профілю без передачі context)
         # або юзер не залогінений — повертаємо False
+        return False
+    
+    def get_is_owner(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.user == request.user
         return False
 
 

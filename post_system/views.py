@@ -10,33 +10,19 @@ from .forms import *
 from .models import *
 
 
-class Index(ListView):
-	model = Post
-	context_object_name = "posts"
-	paginate_by = 3  # Обмеження на кількість постів на сторінці
-	def get_template_names(self):
-		if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-			return ["post_system/post_list.html"]  # Окремий шаблон для шматка постів
-		return ["post_system/index.html"]
+class IndexView(PostQuerysetMixin, ListView):
+    model = Post
+    context_object_name = "posts"
+    paginate_by = 3
+    template_name = "post_system/index.html"
 
-	def get_queryset(self):
-		# Отримуємо категорію з параметрів запиту
-		category = self.request.GET.get('category', 'for_you')
+    def get_queryset(self):
+        return self.get_post_queryset()
 
-		# Фільтрація на основі категорії
-		if category == 'following' and self.request.user.is_authenticated:
-			# Отримуємо підписки користувача
-			following_users = Subscription.objects.filter(user_from=self.request.user).values_list('user_to', flat=True)
-			return Post.objects.filter(user__in=following_users).order_by('-date_published')
-		else:
-			return  Post.objects.all().order_by('-date_published')
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-
-		category = self.request.GET.get('category', 'for_you')
-		context['category'] = category
-		return context
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.request.GET.get('category', 'for_you')
+        return context
 
 
 class PostDetailView(DetailView):
