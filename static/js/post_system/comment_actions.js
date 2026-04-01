@@ -18,59 +18,62 @@ function SendComment(postId) {
     if (currentParentId) {
         formData.append('parent_id', currentParentId);
     }
-
-    fetch(`/post_details/${postId}/`, {
+    fetch('/api/comments/create/', {
         method: 'POST',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf
         },
-        body: formData
+        body: JSON.stringify({
+            content: content,
+            post: postId,
+            parent_id: currentParentId || null
+        })
     })
     .then(response => {
         if (!response.ok) throw new Error('Network response was not ok');
         return response.json();
     })
     .then(data => {
-        if (data.success) {
-            // Створюємо елемент коментаря
-            const newCommentHtml = `
-                <section class="d-flex flex-column flex-grow-1">
-                    <section class="d-flex">
-                        <a href="${data.user_url}"><img src="${data.avatar_url}" class="sidebar-avatar me-3"></a>
-                        <p><a href="${data.user_url}"><b>${data.username}</b></a> ${data.content}</p>
-                    </section>
-                    <p class="gray-text">${data.date_published}</p>
+        const newCommentHtml = `
+            <section class="d-flex flex-column flex-grow-1">
+                <section class="d-flex">
+                    <a href="/user/${data.user.id}/">
+                        <img src="${data.user.avatar_url}" class="sidebar-avatar me-3">
+                    </a>
+                    <p>
+                        <a href="/user/${data.user.id}/"><b>${data.user.username}</b></a> 
+                        ${data.content}
+                    </p>
                 </section>
-                <section>
-                    <a href="${data.update_url}"><span class="material-symbols-outlined pointer">edit</span></a>
-                    <span onclick="deleteComment(${data.commentId})" class="material-symbols-outlined pointer">delete</span>
-                </section>
-            `;
+                <p class="gray-text">$now</p>
+            </section>
+            <section>
+                <span onclick="deleteComment(${data.id})" class="material-symbols-outlined pointer">delete</span>
+            </section>
+        `;
 
-            const newComment = document.createElement('li');
-            newComment.id = `comment-${data.commentId}`;
-            newComment.classList.add('comment-container', 'mt-3', 'd-flex');
-            newComment.innerHTML = newCommentHtml;
+        const newComment = document.createElement('li');
+        newComment.id = `comment-${data.id}`;
+        newComment.classList.add('comment-container', 'mt-3', 'd-flex');
+        newComment.innerHTML = newCommentHtml;
 
-            // ЛОГІКА ВСТАВКИ:
-            if (currentParentId) {
-                // Якщо це відповідь — шукаємо батьківський <li> і вставляємо в його контейнер реплаїв
-                const parentLi = document.getElementById(`comment-${currentParentId}`);
-                // Шукаємо всередині батька контейнер <article class="ms-5">, який ти створив у HTML
-                let repliesContainer = parentLi.querySelector('article.ms-3');
-                repliesContainer.insertAdjacentElement('afterbegin', newComment);
-                
-                // Скидаємо стан відповіді
-                cancelReply();
-            } else {
-                // Якщо це звичайний коментар — просто в кінець головного списку
-                document.getElementById('comments').insertAdjacentElement('afterbegin', newComment);
-            }
-
-            textarea.value = '';
+        // ЛОГІКА ВСТАВКИ:
+        if (currentParentId) {
+            // Якщо це відповідь — шукаємо батьківський <li> і вставляємо в його контейнер реплаїв
+            const parentLi = document.getElementById(`comment-${currentParentId}`);
+            // Шукаємо всередині батька контейнер <article class="ms-5">, який ти створив у HTML
+            let repliesContainer = parentLi.querySelector('article.ms-3');
+            repliesContainer.insertAdjacentElement('afterbegin', newComment);
+            
+            // Скидаємо стан відповіді
+            cancelReply();
         } else {
-            alert('Error: ' + (data.error || 'Unknown error'));
+            // Якщо це звичайний коментар — просто в кінець головного списку
+            document.getElementById('comments').insertAdjacentElement('afterbegin', newComment);
         }
+
+        textarea.value = '';
     })
     .catch(error => console.error('Error:', error));
 }
@@ -93,16 +96,15 @@ function deleteComment(commentId) {
         return;
     }
 
-    fetch(`/delete-comment/${commentId}/`, {
-        method: 'POST',
+    fetch(`/api/comments/delete/${commentId}/`, {
+        method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrf
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    .then(response => {
+        if (response.ok) {
             const commentElement = document.getElementById('comment-' + commentId);
             const repliesContainer = commentElement.querySelector('.replies-list');
             

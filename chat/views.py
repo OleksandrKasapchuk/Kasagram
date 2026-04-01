@@ -19,24 +19,27 @@ from auth_system.serializers import UserSerializer
 class ChatListView(LoginRequiredMixin, ListView):
     model = Chat
     template_name = 'chat/chat_list.html'
-    context_object_name = 'chats'
-
+    
     def get_queryset(self):
-        return self.request.user.chats.all()
+        # Повертаємо об'єкти, як того хоче Django
+        return Chat.objects.for_user_sorted(self.request.user)
 
     def get_context_data(self, **kwargs):
+        # Отримуємо базовий контекст
         context = super().get_context_data(**kwargs)
-
-        serializer = ChatSerializer(context['chats'], many=True, context={'request': self.request})
         
-        chat_data = serializer.data
-
-        chat_data.sort(
-            key=lambda x: x['last_message']['timestamp'] if x['last_message'] else '', 
-            reverse=True
+        # Беремо QuerySet, який повернув get_queryset
+        queryset = self.get_queryset()
+        
+        # Серіалізуємо його точно так само, як в API
+        serializer = ChatSerializer(
+            queryset, 
+            many=True, 
+            context={'request': self.request} # Важливо для посилань на фото/файли
         )
         
-        context['chat_list_data'] = chat_data
+        # Передаємо в шаблон вже готові дані
+        context['chat_list_data'] = serializer.data
         return context
 
 

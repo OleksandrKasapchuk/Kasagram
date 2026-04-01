@@ -1,11 +1,20 @@
 from django.db import models
 from auth_system.models import CustomUser
+from django.db.models import Max
 
+
+class ChatManager(models.Manager):
+    def for_user_sorted(self, user):
+        return self.filter(participants=user).annotate(
+            last_msg_date=Max('messages__timestamp')
+        ).order_by('-last_msg_date')
+    
 
 class Chat(models.Model):
     participants = models.ManyToManyField(CustomUser, related_name='chats')
     created = models.DateTimeField(auto_now_add=True)
-
+    objects = ChatManager()
+    
     def __str__(self):
         return f"Chat between {', '.join([str(p) for p in self.participants.all()])}"
 

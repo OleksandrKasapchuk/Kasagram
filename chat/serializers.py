@@ -76,6 +76,7 @@ class ChatSerializer(serializers.ModelSerializer):
                 'content': msg.content,
                 'formatted_time': chat_tags.chat_date(msg.timestamp),
                 'is_read': msg.is_read,
+                'timestamp': msg.timestamp,
                 # Можна додати прапорець, щоб знати, чи це я написав останній
                 'is_user_message': msg.user == self.context['request'].user if 'request' in self.context else False
             }

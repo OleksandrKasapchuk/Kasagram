@@ -4,7 +4,7 @@ function likePost(postId) {
     const likeBtn = document.getElementById('like-btn-' + postId);
     const likeCount = document.getElementById('like-count-' + postId);
 
-    fetch(`/like/${postId}`, {
+    fetch(`/api/like/${postId}/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
