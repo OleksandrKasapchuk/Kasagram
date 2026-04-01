@@ -47,3 +47,22 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_replies_count(self, obj):
         return obj.replies.count()
+
+
+class LikeActionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['post'] # Нам треба знати тільки який пост лайкають
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        post = self.validated_data['post']
+        
+        like_qs = Like.objects.filter(post=post, user=user)
+        
+        if like_qs.exists():
+            like_qs.delete()
+            return None, False # Повертаємо (None об'єкт, False - не лайкнуто)
+        else:
+            new_like = Like.objects.create(post=post, user=user)
+            return new_like, True # Повертаємо (Об'єкт лайка, True - лайкнуто)

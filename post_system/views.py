@@ -104,38 +104,6 @@ class PostDeleteView(LoginRequiredMixin, UserIsOwnerMixin, DeleteView):
 		return reverse_lazy("post:index")
 
 
-class LikeView(View):
-	def post(self, request, *args, **kwargs):
-		if not request.user.is_authenticated:
-			return JsonResponse({'detail': 'Authentication credentials were not provided.'}, status=403)
-		
-		post = get_object_or_404(Post, pk=self.kwargs.get('pk'))
-		like_qs = Like.objects.filter(post=post, user=request.user)
-		
-		if like_qs.exists():
-			like_qs.delete()
-			liked = False
-		else:
-			like = Like.objects.create(post=post, user=request.user)
-			liked = True
-		data = {
-			'liked': liked,
-			'likes_count': post.likes.count()
-		}
-		return JsonResponse(data)
-
-
-class DeleteCommentView(LoginRequiredMixin, View):
-	def post(self, request, *args, **kwargs):
-		pk = self.kwargs.get('pk')
-		comment = get_object_or_404(Comment, pk=pk)
-		if request.user == comment.user:
-			comment.delete()
-			return JsonResponse({'success': True, 'message': 'Comment deleted successfully.'})
-		else:
-			return JsonResponse({'success': False, 'message': 'You do not have permission to delete this comment.'}, status=403)
-
-
 class UpdateCommentView(LoginRequiredMixin,UserIsOwnerMixin,UpdateView):
 	model = Comment
 	template_name = "form.html"

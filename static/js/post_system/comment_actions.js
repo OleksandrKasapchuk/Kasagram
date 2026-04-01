@@ -93,16 +93,15 @@ function deleteComment(commentId) {
         return;
     }
 
-    fetch(`/delete-comment/${commentId}/`, {
-        method: 'POST',
+    fetch(`/api/delete-comment/${commentId}/`, {
+        method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrf
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    .then(response => {
+        if (response.ok) {
             const commentElement = document.getElementById('comment-' + commentId);
             const repliesContainer = commentElement.querySelector('.replies-list');
             
