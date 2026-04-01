@@ -1,9 +1,6 @@
-from django.shortcuts import redirect, get_object_or_404
-from django.contrib.humanize.templatetags.humanize import naturaltime
-from django.views.generic import View, ListView, DetailView, UpdateView, DeleteView, CreateView
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from django.http import JsonResponse
 from .serializers import *
 from .mixins import *
 from .forms import *
