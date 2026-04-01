@@ -7,6 +7,7 @@ from rest_framework import generics
 from auth_system.models import Subscription
 from rest_framework.permissions import AllowAny 
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import status, parsers
 
 
 class PostPagination(PageNumberPagination):
@@ -37,3 +38,16 @@ class PostListAPIView(generics.ListAPIView):
             return Post.objects.filter(user__in=following_users).order_by('-date_published').select_related('user').prefetch_related('likes', 'comments')
         
         return Post.objects.all().order_by('-date_published').select_related('user').prefetch_related('likes', 'comments')
+
+
+class PostCreateAPIView(APIView):
+    # Тепер ми приймаємо не просто форму, а Multipart дані (файл + текст)
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]
+
+    def post(self, request, *args, **kwargs):
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            # Прив'язуємо юзера (як ти робив у form_valid)
+            serializer.save(user=request.user) 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

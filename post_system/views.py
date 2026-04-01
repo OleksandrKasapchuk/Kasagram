@@ -10,8 +10,6 @@ from .forms import *
 from .models import *
 
 
-
-
 class Index(ListView):
 	model = Post
 	context_object_name = "posts"

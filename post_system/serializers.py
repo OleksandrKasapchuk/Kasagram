@@ -13,9 +13,12 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            'id', 'user', 'content', 'media_url', 
+            'id', 'user', 'content', 'media_url', 'media',
             'date_published', 'likes_count', 'comments_count', 'is_liked'
         ]
+        extra_kwargs = {
+            'media': {'write_only': True}
+        }
 
     def get_media_url(self, obj):
         if obj.media:

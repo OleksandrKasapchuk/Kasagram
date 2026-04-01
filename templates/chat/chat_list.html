@@ -32,7 +32,7 @@
                                                 {% if message.is_read %}done_all{% else %}check{% endif %}
                                             </span>
                                         {% endif %}
-                                        {{ chat.last_message.timestamp|chat_date }}
+                                        {{ chat.last_message.formatted_time }}
                                     {% endif %}
                                 </span>
                                 <span class="new-notification-icon" id="unread-count-{{ chat.id }}" 

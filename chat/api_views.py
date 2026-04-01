@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from .models import Chat, Message
-from .serializers import ChatSerializer, MessageSerializer
+from .models import Chat
+from .serializers import ChatSerializer
 from rest_framework.pagination import PageNumberPagination
 
 
@@ -17,4 +17,4 @@ class ChatListAPIView(generics.ListAPIView):
     pagination_class = ChatPagination
 
     def get_queryset(self):
-        return Chat.objects.filter(participants=self.request.user)
+        return Chat.objects.for_user_sorted(self.request.user)
