@@ -37,16 +37,29 @@ class PostSerializer(serializers.ModelSerializer):
         # або юзер не залогінений — повертаємо False
         return False
 
+
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     replies_count = serializers.SerializerMethodField()
+    parent_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'post', 'content', 'date_published', 'parent', 'replies_count']
+        fields = [
+            'id', 'user', 'post', 'content', 
+            'date_published', 'parent', 'replies_count', 'parent_id'
+        ]
+        read_only_fields = ['date_published', 'user']
 
     def get_replies_count(self, obj):
         return obj.replies.count()
+
+    def create(self, validated_data):
+        # Витягуємо parent_id, якщо він є
+        parent_id = validated_data.pop('parent_id', None)
+        if parent_id:
+            validated_data['parent'] = Comment.objects.get(pk=parent_id)
+        return super().create(validated_data)
 
 
 class LikeActionSerializer(serializers.ModelSerializer):

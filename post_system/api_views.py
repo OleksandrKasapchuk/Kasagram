@@ -1,16 +1,13 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import generics
+from rest_framework.generics import ListAPIView, DestroyAPIView, CreateAPIView
 from .models import Post
 from .serializers import *
-from rest_framework import generics
 from auth_system.models import Subscription
-from rest_framework.permissions import AllowAny 
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import status, parsers, permissions
-from rest_framework.generics import DestroyAPIView
+from rest_framework import status, parsers
 from .permissions import *
-
 
 class PostPagination(PageNumberPagination):
     page_size = 3  # Тільки для постів буде по 3
@@ -24,7 +21,7 @@ class PingView(APIView):
         return Response({"status": "server works"})
 
 
-class PostListAPIView(generics.ListAPIView):
+class PostListAPIView(ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = PostSerializer
     pagination_class = PostPagination  # ОСЬ ТУТ МИ КАЖЕМО: "Пагінуй тільки це в'ю"
@@ -56,7 +53,7 @@ class PostCreateAPIView(APIView):
 
 
 class LikeAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
         # Передаємо pk поста в серіалізатор через дані
@@ -79,4 +76,14 @@ class LikeAPIView(APIView):
 
 class DeleteCommentAPIView(DestroyAPIView):
     queryset = Comment.objects.all()
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated, IsOwner]
+
+
+class CommentCreateAPIView(CreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Прив'язуємо поточного юзера автоматично
+        serializer.save(user=self.request.user)

@@ -44,35 +44,6 @@ class PostDetailView(DetailView):
 	context_object_name ='post'
 	template_name = 'post_system/post_details.html'
 
-	def post(self, request,pk, *args, **kwargs):
-		post = get_object_or_404(Post, pk=pk)
-		content = request.POST.get('content')
-		parent_id = request.POST.get('parent_id')
-		try:
-			comment = Comment.objects.create(
-			post=post,
-			user=request.user,
-			content=content,
-			parent_id=parent_id
-			)
-			readable_time = str(naturaltime(comment.date_published))
-			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-				return JsonResponse({
-					'success': True,
-					'username': request.user.username,
-					'content': comment.content,
-					'avatar_url': request.user.avatar.url,
-					'date_published': readable_time,
-					'user_url': reverse_lazy('user-info', kwargs={"pk":comment.user.pk}),
-					'update_url': reverse_lazy('post:update-comment', kwargs={"pk":comment.pk}),
-					'commentId': comment.pk,
-				})
-			return redirect('post:post_details', pk=post.pk)
-		except Exception as e:
-			if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-				return JsonResponse({'success': False, 'error': str(e)})
-			raise e
-
 
 class PostCreateView(LoginRequiredMixin, CreateView):
 	model = Post
