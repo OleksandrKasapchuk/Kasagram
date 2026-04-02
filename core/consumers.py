@@ -241,7 +241,6 @@ class GlobalConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_add("global_presence", self.channel_name)
             await self.accept()
     async def user_status_change(self, event):
-        # Відправляємо інфу про зміну статусу на фронтенд/апку
         await self.send(text_data=json.dumps(event))
 
     @database_sync_to_async

@@ -1,7 +1,4 @@
-from django.shortcuts import  get_object_or_404
 from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 from chat.models import *
 from .models import *
 from django.views.generic import CreateView, UpdateView, DetailView
@@ -53,26 +50,3 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return f"/user-info/{self.request.user.id}/"
-
-
-@login_required
-def toggle_follow(request, pk):
-    user_to = get_object_or_404(CustomUser, id=pk)
-    # Унеможливлюємо підписку на самого себе
-    if request.user == user_to:
-        return JsonResponse({'error': 'You cannot follow yourself.'}, status=400)
-
-    subscription = Subscription.objects.filter(user_from=request.user,user_to=user_to)
-
-    if subscription.exists():
-        subscription.delete()
-        following = False
-    else:
-        Subscription.objects.create(user_from=request.user,user_to=user_to)
-        following = True
-    
-    return JsonResponse({
-        'following': following,
-        'followers_count': user_to.followers.count(),
-        'following_count': user_to.following.count(),
-    })
