@@ -54,5 +54,20 @@
 }
 
 .cancel-reply:hover {
-    color: #ff4d4d; /* Червоний при наведенні */
+    color: var(--accent-red);
+}
+
+.comment-container section .material-symbols-outlined,
+.replies-list article section .material-symbols-outlined {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.comment-container:hover section .material-symbols-outlined,
+.replies-list article:hover section .material-symbols-outlined {
+    opacity: 1;
+}
+
+.material-symbols-outlined:hover {
+    color: #0095f6; 
 }

@@ -11,6 +11,8 @@ from notifications.models import Notification
 from django.utils import timezone
 from datetime import timedelta
 from django.urls import reverse
+from django.contrib.contenttypes.models import ContentType
+
 
 @receiver(post_save, sender=Like)
 def create_like_notification(sender, instance, created, **kwargs):
@@ -21,21 +23,23 @@ def create_like_notification(sender, instance, created, **kwargs):
         if actor != post.user:
             threshold = timezone.now() - timedelta(minutes=5)
             
+            # Отримуємо ContentType для моделі Post
+            post_type = ContentType.objects.get_for_model(post)
+            
+            # Шукаємо дублікат за останні 5 хвилин
             existing_notif = Notification.objects.filter(
                 user=post.user,
                 actor=actor,
-                post=post,
-                type="post",
+                content_type=post_type,
+                object_id=post.id,
                 created_at__gte=threshold
-            ).first()
+            ).exists()
 
             if not existing_notif:
-                # Створюємо нове, якщо старого немає
                 Notification.objects.create(
                     user=post.user,
                     actor=actor,
-                    post=post,
-                    type="post"
+                    target=post
                 )
 
 @receiver(post_save, sender=Comment)
@@ -48,9 +52,7 @@ def create_comment_notification(sender, instance, created, **kwargs):
             Notification.objects.create(
                 user=post.user,
                 actor=actor,
-                post=post,
-                comment=instance,
-                type="comment"
+                target=instance
             )
 
 @receiver(post_save, sender=Message)
@@ -58,22 +60,19 @@ def send_message_notification(sender, instance, created, **kwargs):
     if created:
         chat = instance.chat
         sender_user = instance.user
-
         recipient = chat.participants.exclude(id=sender_user.id).first()
 
         if recipient:
             Notification.objects.create(
                 user=recipient,
                 actor=sender_user,
-                chat=chat,
-                type="chat"
+                target=chat
             )
 
 @receiver(post_save, sender=Notification)
 def notify_on_new_notification(sender, instance, created, **kwargs):
     if created:
         user = instance.user
-        # Рахуємо актуальну кількість
         unread_count = user.notifications.filter(is_read=False).count()
 
         channel_layer = get_channel_layer()

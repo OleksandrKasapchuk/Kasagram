@@ -1,19 +1,21 @@
 from rest_framework import serializers
 from .models import *
+from common.utils import format_date
 from auth_system.serializers import UserSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    # Хто саме зробив дію (лайкнув, прокоментував)
-    actor_details = UserSerializer(source='actor', read_only=True)
-    # Зручне текстове повідомлення та URL
-    message = serializers.CharField(source='get_message', read_only=True)
-    target_url = serializers.CharField(source='get_url', read_only=True)
-    
+    actor = UserSerializer()
+    message = serializers.ReadOnlyField(source='get_message')
+    target_url = serializers.ReadOnlyField(source='get_url')
+    created_at_human = serializers.SerializerMethodField()
+
     class Meta:
         model = Notification
         fields = [
-            'id', 'user', 'actor_details', 'type', 
-            'post', 'comment', 'chat', 
-            'message', 'target_url', 'created_at', 'is_read'
+            'id', 'actor', 'message', 
+            'target_url', 'is_read', 'created_at', 'created_at_human'
         ]
+
+    def get_created_at_human(self, obj):
+        return format_date(obj.created_at)

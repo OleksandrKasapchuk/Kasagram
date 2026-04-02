@@ -1,6 +1,7 @@
 from django.db import models
 from auth_system.models import *
 from cloudinary.models import CloudinaryField
+from django.urls import reverse
 
 
 class Post(models.Model):
@@ -12,6 +13,9 @@ class Post(models.Model):
 	def __str__(self):
 		return f"{self.user} - {self.date_published}"
 
+	def get_absolute_url(self):
+		return reverse("post:post-details", args=[self.pk])
+	
 	class Meta:
 		ordering = ('-date_published',)
 
@@ -25,6 +29,9 @@ class Comment(models.Model):
 	
 	def __str__(self):
 		return f"{self.user} - {self.date_published}"
+	
+	def get_absolute_url(self):
+		return reverse("post:post-details", args=[self.post.pk])
 	
 	class Meta:
 		ordering = ('-date_published',)

@@ -4,8 +4,8 @@
 
 {% block content %}
 {% load static %}
-{% load chat_tags %}
-{% load humanize %}
+{% load common_tags %}
+
 <article class="main-container" >
 	<article class="post-detail-container d-flex justify-content-center">
 		<img src="{{post.media.url}}" class="post-detail-media">
@@ -36,16 +36,16 @@
 										</p>
 									</section>                  
 									<div class="d-flex gap-3 align-items-center">
-										<small class="gray-text">{{ comment.date_published|chat_date }}</small>
+										<small class="gray-text">{{ comment.date_published|custom_date }}</small>
 										<small class="pointer text-secondary fw-bold" onclick="prepareReply({{ comment.pk }}, '{{ comment.user.username }}')">Reply</small>
 									</div>
 								</section>
 
 								{% if request.user == comment.user %}
-								<section>
-									<a href="{% url 'post:update-comment' comment.pk %}"><span class="material-symbols-outlined pointer">edit</span></a>
-									<span class="material-symbols-outlined pointer" onclick="deleteComment({{ comment.pk }})">delete</span>
-								</section>
+									<section>
+										<a href="{% url 'post:update-comment' comment.pk %}"><span class="material-symbols-outlined pointer">edit</span></a>
+										<span class="material-symbols-outlined pointer" onclick="deleteComment({{ comment.pk }})">delete</span>
+									</section>
 								{% endif %}
 							</div>
 
@@ -59,7 +59,7 @@
 												</a>
 												<p><a href="{% url 'user-info' reply.user.pk %}"><b>{{ reply.user }}</b></a> {{ reply.content }}</p>
 											</section>                  
-											<small class="gray-text">{{ reply.date_published|chat_date }}</small>
+											<small class="gray-text">{{ reply.date_published|custom_date }}</small>
 										</section>
 										{% if request.user == reply.user %}
 											<section>
@@ -86,7 +86,7 @@
 		</section>
 		<section class="post-info">
 			<p><span id="like-count-{{ post.pk }}">{{ post.likes.count }}</span> likes</p>
-			<p class="gray-text">{{ post.date_published|chat_date }}</p>
+			<p class="gray-text">{{ post.date_published|custom_date }}</p>
 		</section>
 		
 		<section class="msg-input-container"> 

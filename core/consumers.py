@@ -59,7 +59,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         'message_id': message_id
                     }
                 )
-        elif 'message' in data:
+        elif action == 'chat_message':
         
             message_text = data['message']
             username = data['username']
@@ -103,6 +103,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         is_me = self.scope['user'].username == event['username']
         # Надсилаємо назад на фронтенд (в браузер)
         await self.send(text_data=json.dumps({
+            'type': 'chat_message',
             'message': event['message'],
             'username': event['username'],
             'message_id': event['message_id'],
@@ -241,7 +242,6 @@ class GlobalConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_add("global_presence", self.channel_name)
             await self.accept()
     async def user_status_change(self, event):
-        # Відправляємо інфу про зміну статусу на фронтенд/апку
         await self.send(text_data=json.dumps(event))
 
     @database_sync_to_async

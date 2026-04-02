@@ -2,14 +2,13 @@ from rest_framework import serializers
 from .models import Message, Chat
 from auth_system.serializers import UserSerializer
 from django.urls import reverse
-from .templatetags import chat_tags
+from common.utils import format_date
+
 
 class MessageSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
-    is_user_message = serializers.SerializerMethodField()
-
-    delete_url = serializers.SerializerMethodField()
+    is_me = serializers.SerializerMethodField()
 
     formatted_time = serializers.SerializerMethodField()
     parent_id = serializers.PrimaryKeyRelatedField(source='parent', read_only=True)
@@ -20,11 +19,10 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = [
             'id', 'user', 'content', 'timestamp', 'formatted_time', 
-            'is_read', 'is_user_message', 'parent_id', 'parent_content', 'parent_username',
-            'delete_url'
+            'is_read', 'is_me', 'parent_id', 'parent_content', 'parent_username',
         ]
     
-    def get_is_user_message(self, obj):
+    def get_is_me(self, obj):
         # Отримуємо юзера з контексту запиту
         request = self.context.get('request')
         if request and request.user.is_authenticated:
@@ -34,8 +32,6 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_formatted_time(self, obj):
         return obj.timestamp.strftime('%H:%M')
     
-    def get_delete_url(self, obj):
-        return reverse('chat:delete_message', args=[obj.pk])
 
 
 class ChatSerializer(serializers.ModelSerializer):
@@ -74,10 +70,10 @@ class ChatSerializer(serializers.ModelSerializer):
         if msg:
             return {
                 'content': msg.content,
-                'formatted_time': chat_tags.chat_date(msg.timestamp),
+                'formatted_time': format_date(msg.timestamp),
                 'is_read': msg.is_read,
                 'timestamp': msg.timestamp,
                 # Можна додати прапорець, щоб знати, чи це я написав останній
-                'is_user_message': msg.user == self.context['request'].user if 'request' in self.context else False
+                'is_me': msg.user == self.context['request'].user if 'request' in self.context else False
             }
         return None

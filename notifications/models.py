@@ -1,48 +1,39 @@
-# models.py
 from django.db import models
 from auth_system.models import CustomUser
 from post_system.models import *
 from chat.models import *
-from django.urls import reverse
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
 
 class Notification(models.Model):
-    NOTIFICATION_TYPES = [
-        ('post', 'Post'),
-        ('comment', 'Comment'),
-        ('chat', 'Chat'),
-    ]
-
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="notifications")
     actor = models.ForeignKey(CustomUser,on_delete=models.CASCADE, related_name="actions")
 
-    type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, null=True, blank=True)
+    # Службові поля для Generic Relation
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    # Це і є наш "універсальний" об'єкт (Post, Comment, Chat тощо)
+    target = GenericForeignKey('content_type', 'object_id')
     
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.actor} -> {self.user} ({self.type})"
-
-    def get_url(self):
-        if self.type == "post" and self.post:
-            return reverse("post:post-details", args=[self.post.pk])
-
-        if self.type == "chat" and self.chat:
-            return reverse("chat:chat_detail", args=[self.chat.pk])
-
-        if self.type == "comment" and self.comment:
-            return reverse("post:post-details", args=[self.comment.post.pk])
-        return "#"
     
+    def get_url(self):
+        # Тепер ми можемо просто викликати get_absolute_url у об'єкта, якщо він є
+        if hasattr(self.target, 'get_absolute_url'):
+            return self.target.get_absolute_url()
+        return "#"
+
     def get_message(self):
-        if self.type == "post":
-            return " liked your post"
-
-        if self.type == "comment":
-            return " commented on your post"
-
-        if self.type == "chat":
-            return " sent you a message"
+        # Можна зробити словник типів для зручності
+        messages = {
+            'post': "liked your post",
+            'comment': "commented on your post",
+            'chat': "sent you a message",
+        }
+        # content_type.model поверне рядок 'post', 'comment' і т.д.
+        return messages.get(self.content_type.model, "interacted with you")

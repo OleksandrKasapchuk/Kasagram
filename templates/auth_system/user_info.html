@@ -18,7 +18,7 @@
                         <span class="material-symbols-outlined">settings</span>
                     {% else %}
                         <button id="follow-button-{{ user.pk }}" class="a-btn" onclick="toggleFollow({{ user.pk }})">
-                            {% if user.pk in following %}Unfollow{% else %}Follow{% endif %}
+                            {% if is_following %}Unfollow{% else %}Follow{% endif %}
                         </button>
                         <a href="{% url 'chat:start_chat' user.pk %}" class="a-btn">Start Chat</a>
                     {% endif %}

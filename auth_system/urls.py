@@ -3,14 +3,10 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
-    # Реєстрація (наша кастомна в'юшка)
     path('register/', views.RegisterView.as_view(), name='register'),
 
-    # Логін та Логаут (вбудовані, просто вказуємо шаблон)
     path('login/', auth_views.LoginView.as_view(
-        template_name='form.html',
-        extra_context={'title': 'Login'}
-    ), name='login'),
+        template_name='form.html',extra_context={'title': 'Login'}), name='login'),
     
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 

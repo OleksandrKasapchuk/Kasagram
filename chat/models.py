@@ -1,6 +1,7 @@
 from django.db import models
 from auth_system.models import CustomUser
 from django.db.models import Max
+from django.urls import reverse
 
 
 class ChatManager(models.Manager):
@@ -17,6 +18,9 @@ class Chat(models.Model):
     
     def __str__(self):
         return f"Chat between {', '.join([str(p) for p in self.participants.all()])}"
+    
+    def get_absolute_url(self):
+        return reverse("chat:chat_detail", args=[self.pk])
 
 
 class Message(models.Model):

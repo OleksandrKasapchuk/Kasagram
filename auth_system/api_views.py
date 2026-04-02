@@ -3,10 +3,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from .models import CustomUser
-from rest_framework.permissions import IsAuthenticated
-from .serializers import *
+from .models import CustomUser, Subscription
 from django.shortcuts import  get_object_or_404
+from rest_framework.views import APIView
+from rest_framework import status
+from .serializers import *
 
 
 # 1. ДЛЯ ТИХ ХТО ВЖЕ МАЄ АККАУНТ (ЛОГІН)
@@ -46,13 +47,42 @@ def api_register(request):
     # Якщо дані "криві" — повертаємо помилки (наприклад: "цей email вже зайнятий")
     return Response(serializer.errors, status=400)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated]) # Тільки залогінені бачать профілі
-def get_user_detail(request, id):
-    # Шукаємо юзера за ID, який прийшов з Android
-    user = get_object_or_404(CustomUser, pk=id)
-    
-    # Перетворюємо об'єкт юзера в JSON
-    serializer = UserDetailSerializer(user)
-    
-    return Response(serializer.data)
+
+class UserDetailAPIView(APIView):
+    def get(self, request, pk):
+        user = get_object_or_404(CustomUser, pk=pk)
+        
+        # Перетворюємо об'єкт юзера в JSON
+        serializer = UserDetailSerializer(user)
+        
+        return Response(serializer.data)
+
+
+class ToggleFollowAPIView(APIView):
+    def post(self, request, pk):
+        user_to = get_object_or_404(CustomUser, pk=pk)
+        
+        # Перевірка на підписку на самого себе
+        if request.user == user_to:
+            return Response(
+                {'error': 'You cannot follow yourself.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        subscription_qs = Subscription.objects.filter(
+            user_from=request.user, 
+            user_to=user_to
+        )
+
+        if subscription_qs.exists():
+            subscription_qs.delete()
+            following = False
+        else:
+            Subscription.objects.create(user_from=request.user, user_to=user_to)
+            following = True
+        
+        return Response({
+            'following': following,
+            'followers_count': user_to.followers.count(),
+            'following_count': user_to.following.count(),
+        }, status=status.HTTP_200_OK)
