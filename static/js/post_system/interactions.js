@@ -32,11 +32,12 @@ function likePost(postId) {
 
 function toggleFollow(userId) {
 
-    fetch(`/toggle-follow/${userId}`, {
+    fetch(`/api/toggle-follow/${userId}/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': window.DjangoConfig.csrfToken,
             'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({ user_id: userId })
     })

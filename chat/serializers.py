@@ -35,7 +35,7 @@ class MessageSerializer(serializers.ModelSerializer):
         return obj.timestamp.strftime('%H:%M')
     
     def get_delete_url(self, obj):
-        return reverse('chat:delete_message', args=[obj.pk])
+        return reverse('chat_api:delete_message', args=[obj.pk])
 
 
 class ChatSerializer(serializers.ModelSerializer):

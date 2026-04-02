@@ -4,10 +4,10 @@ from rest_framework.generics import ListAPIView, DestroyAPIView, CreateAPIView
 from .models import Post
 from .serializers import *
 from .mixins import PostQuerysetMixin
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status, parsers
-from .permissions import *
+from common.permissions import *
 
 
 class PingView(APIView):
@@ -45,8 +45,6 @@ class PostCreateAPIView(APIView):
 
 
 class LikeAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, pk):
         # Передаємо pk поста в серіалізатор через дані
         serializer = LikeActionSerializer(data={'post': pk}, context={'request': request})
@@ -68,14 +66,12 @@ class LikeAPIView(APIView):
 
 class DeleteCommentAPIView(DestroyAPIView):
     queryset = Comment.objects.all()
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsOwner]
 
 
 class CommentCreateAPIView(CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
-
     def perform_create(self, serializer):
         # Прив'язуємо поточного юзера автоматично
         serializer.save(user=self.request.user)

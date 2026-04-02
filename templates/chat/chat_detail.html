@@ -89,7 +89,7 @@
 {% block scripts %}
 <script>
     window.ChatConfig = {
-        fetchMessagesUrl: "{% url 'chat:get_messages' chat.pk %}",
+        fetchMessagesUrl: "{% url 'chat_api:get_messages' chat.pk %}",
         sendMessageUrl: "{% url 'chat:chat_detail' chat.pk %}",
         chatId: "{{ chat.pk }}",
         currentUser: "{{ request.user.username }}"
