@@ -48,7 +48,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://web-social-media-3.onrender.com",
 ]
 
-# Application definition
 
 INSTALLED_APPS = [
     'daphne',
@@ -64,6 +63,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'core',
+    'common',
 	'auth_system',
 	'post_system',
     'chat',

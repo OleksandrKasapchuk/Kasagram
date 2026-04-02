@@ -1,11 +1,7 @@
-from django import template
 from django.utils import timezone
 import datetime
 
-register = template.Library()
-
-@register.filter
-def chat_date(value):
+def format_date(value):
     if not value:
         return ""
     

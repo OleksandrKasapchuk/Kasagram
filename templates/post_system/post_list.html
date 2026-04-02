@@ -1,5 +1,5 @@
 {% load static %}
-{% load chat_tags %}
+{% load common_tags %}
 {% for post in posts %}
 	<br>
 	<article class="post-container">
@@ -13,7 +13,7 @@
 					{% endif %}
 					class="profile-avatar" style="width: 36px;height: 36px;"></a>
 				<a href="{% url 'user-info' post.user.pk %}"><h4><b>{{ post.user }}</b></h4></a>
-				<h4 class="gray-text">{{ post.date_published|chat_date }}</h4>
+				<h4 class="gray-text">{{ post.date_published|custom_date }}</h4>
 			</article>
 			<figure>
 				<img src="{{post.media.url}}" class="post-media">

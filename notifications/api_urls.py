@@ -1,7 +1,7 @@
 from django.urls import path
-from post_system.api_views import *
+from .api_views import *
 
 
 urlpatterns = [
-    
+    path('notifications/', NotificationAPIView.as_view(), name='notifications'),
 ]
