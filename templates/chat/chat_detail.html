@@ -26,10 +26,10 @@
         </section>
     </article>
 
-    <section id="chat-messages" class="d-flex flex-column">
+    <section id="chat-messages" class="d-flex flex-column-reverse">
         {% for message in messages %}
-        <article class="d-flex mx-3 mb-2 {% if message.is_user_message %}flex-row-reverse{% else %}flex-row{% endif %}" id="message-{{ message.id }}">
-            <div class="message-wrapper {% if message.is_user_message %}sent{% else %}received{% endif %}"
+        <article class="d-flex mx-3 mb-2 {% if message.is_me %}flex-row-reverse{% else %}flex-row{% endif %}" id="message-{{ message.id }}">
+            <div class="message-wrapper {% if message.is_me %}sent{% else %}received{% endif %}"
                 oncontextmenu="prepareMessageReply({{ message.id }}, '{{ message.username }}', '{{ message.content|truncatechars:30 }}'); return false;">
                 
                 <div class="message-content">
@@ -46,7 +46,7 @@
                     <div class="message-meta-container">
                         <time class="message-time" datetime="{{ message.timestamp|date:'Y-m-d H:i' }}">{{ message.formatted_time }}</time>
 
-                        {% if message.is_user_message %}
+                        {% if message.is_me %}
                             <span class="material-symbols-outlined status-icon {% if message.is_read %}read{% endif %}">
                                 {% if message.is_read %}done_all{% else %}check{% endif %}
                             </span>
@@ -61,7 +61,7 @@
                     reply
                 </span>
                 
-                {% if message.is_user_message %}
+                {% if message.is_me %}
                     <span onclick="deleteMessage({{ message.id }})" class="delete-btn pointer material-symbols-outlined">delete</span>
                 {% endif %}
             </div>

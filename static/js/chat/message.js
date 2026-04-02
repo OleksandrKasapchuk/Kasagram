@@ -80,6 +80,7 @@ function SendMessage() {
 
     if (content !== "") {
         chatSocket.send(JSON.stringify({
+            'action': 'chat_message',
             'message': content,
             'username': window.ChatConfig.currentUser,
             'parent_id': parentId ? parentId : null // ПЕРЕДАЄМО ID БАТЬКА
@@ -116,7 +117,7 @@ chatSocket.onmessage = function(e) {
         const messageDiv = document.getElementById(`message-${data.message_id}`);
         if (messageDiv) messageDiv.remove();
         return;
-    } else if (data.message) {
+    } else if (data.type === 'chat_message') {
         const chatMessages = document.getElementById('chat-messages');
         
         if (!isMe) {
@@ -168,7 +169,7 @@ chatSocket.onmessage = function(e) {
             </article>
         `;
 
-        chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+        chatMessages.insertAdjacentHTML('afterbegin', messageHtml);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 };
@@ -186,38 +187,22 @@ chatSocket.onclose = function(e) {
 };
 
 chatMessages.addEventListener('scroll', async () => {
-    if (chatMessages.scrollTop <= 50 && !isFetching) {
+    const scrollFromBottom = Math.abs(chatMessages.scrollTop) + chatMessages.clientHeight;
+    
+    if (scrollFromBottom >= chatMessages.scrollHeight - 100 && !isFetching) {
         isFetching = true;
-        
-        // Зберігаємо поточне перше повідомлення, щоб знати, чи довантажилось щось
-        const currentFirstMsg = chatMessages.querySelector('article');
-        
         await loadMoreMessages();
-        
         isFetching = false;
     }
 });
 
-function scrollToBottom() {
-    if (chatMessages) {
-        // scrollHeight — це повна висота всього контенту всередині
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-}
-
-// Викликаємо відразу після завантаження DOM
-document.addEventListener('DOMContentLoaded', () => {
-    // Невелика затримка (100мс) потрібна, щоб браузер встиг 
-    // прорахувати висоту всіх елементів і картинок
-    setTimeout(scrollToBottom, 100);
-});
 
 async function loadMoreMessages(){
-    const firstMessage = document.querySelector("#chat-messages article:first-child");
+    const firstMessage = document.querySelector("#chat-messages article:last-child");
     if (!firstMessage) return;
 
     const oldestId = firstMessage.id.replace("message-", "");
-    const url = `/chat/messages/${chatId}/?oldest_id=${oldestId}`;
+    const url = `/api/messages/${chatId}/?oldest_id=${oldestId}`;
 
     try {
         const response = await fetch(url);
@@ -232,11 +217,9 @@ async function loadMoreMessages(){
 }
 
 function renderOlderMessages(messages){
-    const oldHeight = chatMessages.scrollHeight;
-
     let htmlContent = '';
     messages.forEach(msg => {
-        const isMe = msg.is_user_message;
+        const isMe = msg.is_me;
         const msgHtml = `
             <article class="d-flex mx-3 mb-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}" id="message-${msg.id}">
                 <div class="message-wrapper position-relative ${isMe ? 'sent' : 'received'}">
@@ -263,11 +246,5 @@ function renderOlderMessages(messages){
         htmlContent += msgHtml;
     });
 
-    // 3. Вставляємо все одним махом у початок контейнера
-    chatMessages.insertAdjacentHTML('afterbegin', htmlContent);
-
-    // 4. Коригуємо скрол: нова висота мінус стара висота
-    // Це дозволить юзеру залишитися на тому ж місці, де він був
-    const newHeight = chatMessages.scrollHeight;
-    chatMessages.scrollTop = newHeight - oldHeight;
+    chatMessages.insertAdjacentHTML('beforeend', htmlContent);
 }
