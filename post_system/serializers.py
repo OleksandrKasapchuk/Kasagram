@@ -45,21 +45,40 @@ class PostSerializer(serializers.ModelSerializer):
         return False
 
 
+class PostDetailSerializer(PostSerializer):
+    # Додаємо список коментарів
+    comments = serializers.SerializerMethodField()
+
+    class Meta(PostSerializer.Meta):
+        fields = PostSerializer.Meta.fields + ['comments']
+
+    def get_comments(self, obj):
+        # Беремо тільки "батьківські" коментарі (parent=None)
+        # Реплаї підтягнуться автоматично через CommentSerializer
+        root_comments = obj.comments.filter(parent__isnull=True)
+        return CommentSerializer(root_comments, many=True).data
+
+
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    replies_count = serializers.SerializerMethodField()
     parent_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    
+    # Додаємо replies для відображення дерева (Read Only)
+    replies = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = [
             'id', 'user', 'post', 'content', 
-            'date_published', 'parent', 'replies_count', 'parent_id'
+            'date_published', 'parent', 'parent_id', 'replies'
         ]
         read_only_fields = ['date_published', 'user']
 
-    def get_replies_count(self, obj):
-        return obj.replies.count()
+    def get_replies(self, obj):
+        # Якщо у коментаря є реплаї, серіалізуємо їх цим же серіалізатором
+        if obj.replies.exists():
+            return CommentSerializer(obj.replies.all(), many=True).data
+        return []
 
     def create(self, validated_data):
         # Витягуємо parent_id, якщо він є

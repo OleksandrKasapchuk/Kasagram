@@ -8,7 +8,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status, parsers
 from common.permissions import *
-
+from rest_framework.generics import RetrieveAPIView
+from .models import Post
+from .serializers import PostDetailSerializer 
 
 class PingView(APIView):
     permission_classes = [AllowAny]
@@ -62,6 +64,17 @@ class LikeAPIView(APIView):
             }, status=status.HTTP_200_OK)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostDetailAPIView(RetrieveAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostDetailSerializer
+    
+    def get_serializer_context(self):
+        # Це обов'язково для роботи request всередині SerializerMethodField
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 
 class DeleteCommentAPIView(DestroyAPIView):

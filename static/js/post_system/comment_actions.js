@@ -38,17 +38,21 @@ function SendComment(postId) {
         const newCommentHtml = `
             <section class="d-flex flex-column flex-grow-1">
                 <section class="d-flex">
-                    <a href="/user/${data.user.id}/">
+                    <a href="/auth/user-info/${data.user.id}/">
                         <img src="${data.user.avatar_url}" class="sidebar-avatar me-3">
                     </a>
                     <p>
-                        <a href="/user/${data.user.id}/"><b>${data.user.username}</b></a> 
+                        <a href="/auth/user-info/${data.user.id}/"><b>${data.user.username}</b></a> 
                         ${data.content}
                     </p>
                 </section>
-                <p class="gray-text">$now</p>
+                <div class="d-flex gap-3 align-items-center">
+                    <small class="gray-text">now</small>
+                    <small class="pointer text-secondary fw-bold" onclick="prepareReply(${data.id}, '{{ comment.user.username }}')">Reply</small>
+                </div>
             </section>
-            <section>
+            <section class="mb-3">
+                <a href="/update-comment/${data.id}/"><span class="material-symbols-outlined pointer">edit</span></a>
                 <span onclick="deleteComment(${data.id})" class="material-symbols-outlined pointer">delete</span>
             </section>
         `;

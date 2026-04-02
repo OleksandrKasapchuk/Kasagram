@@ -5,4 +5,4 @@ register = template.Library()
 
 @register.filter
 def custom_date(value):
-    format_date(value)
+    return format_date(value)

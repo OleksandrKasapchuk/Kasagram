@@ -5,7 +5,7 @@
 {% block content %}
 {% load static %}
 {% load common_tags %}
-{% load humanize %}
+
 <article class="main-container" >
 	<article class="post-detail-container d-flex justify-content-center">
 		<img src="{{post.media.url}}" class="post-detail-media">
@@ -42,10 +42,10 @@
 								</section>
 
 								{% if request.user == comment.user %}
-								<section>
-									<a href="{% url 'post:update-comment' comment.pk %}"><span class="material-symbols-outlined pointer">edit</span></a>
-									<span class="material-symbols-outlined pointer" onclick="deleteComment({{ comment.pk }})">delete</span>
-								</section>
+									<section>
+										<a href="{% url 'post:update-comment' comment.pk %}"><span class="material-symbols-outlined pointer">edit</span></a>
+										<span class="material-symbols-outlined pointer" onclick="deleteComment({{ comment.pk }})">delete</span>
+									</section>
 								{% endif %}
 							</div>
 
