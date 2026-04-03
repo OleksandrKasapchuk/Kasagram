@@ -136,6 +136,9 @@
 }
 
 @media(max-width:500px) {
+    #post-list-container {
+        width: 98vw;
+    }
 	.post-container {
 		width: 100%;
 	}

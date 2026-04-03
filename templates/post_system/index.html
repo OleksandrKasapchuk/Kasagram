@@ -12,13 +12,13 @@
 
 {% block content %}
 
-<article id="post-container">
+<article id="post-list-container">
 	{% include "post_system/post_list.html" %}
 </article>
-<section id="loading" style="display:none;">Завантаження...</section>
 
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'js/post_system/navigation.js' %}" defer></script>
 <script src="{% static 'js/post_system/infinite_scroll.js' %}" defer></script>
+<script src="{% static 'js/post_system/interactions.js' %}" defer></script>
 {% endblock %}
