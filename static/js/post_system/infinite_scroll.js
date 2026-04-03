@@ -22,7 +22,7 @@ window.onscroll = function() {
             if (data.results.length === 0) {
                 emptyPage = true;
             } else {
-                const container = document.getElementById('post-container');
+                const container = document.getElementById('post-list-container');
                 
                 data.results.forEach(post => {
                     const postHtml = renderPost(post); // Викликаємо функцію малювання
@@ -53,7 +53,7 @@ function renderPost(post) {
 
     return `
         <br>
-        <article class="post-container" id="post-${post.id}">
+        <article class="post-container">
             <section>
                 <article class="post-user-info d-flex">
                     <a href="/user/${post.user.id}/">
