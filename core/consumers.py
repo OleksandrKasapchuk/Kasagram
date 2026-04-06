@@ -201,18 +201,8 @@ class GlobalConsumer(AsyncWebsocketConsumer):
         # Якщо задача все ще в словнику (її не скасував connect)
         if user_id in GlobalConsumer.delays:
             await self.update_user_online(False)
-            
-            now = timezone.now()
-            readable_time = str(naturaltime(now))
-            await self.channel_layer.group_send(
-                "global_presence",
-                {
-                    'type': 'user_status_change',
-                    'username': self.user.username,
-                    'is_online': False,
-                    'last_seen': readable_time
-                }
-            )
+            await self.broadcast_status(False)
+        
             del GlobalConsumer.delays[user_id]
 
     async def connect(self):
@@ -226,28 +216,51 @@ class GlobalConsumer(AsyncWebsocketConsumer):
                 GlobalConsumer.delays[user_id].cancel()
                 del GlobalConsumer.delays[user_id]
             else:
-                # Якщо його не було в списку на вихід — значить він реально зайшов вперше
                 await self.update_user_online(True)
-                await self.channel_layer.group_send(
-                    "global_presence",
-                    {
-                        'type': 'user_status_change',
-                        'username': self.user.username,
-                        'is_online': True
-                    }
-                )
+                await self.broadcast_status(True)
+                
             
             self.user_group = f"user_global_{user_id}"
             await self.channel_layer.group_add(self.user_group, self.channel_name)
             await self.channel_layer.group_add("global_presence", self.channel_name)
             await self.accept()
+
     async def user_status_change(self, event):
         await self.send(text_data=json.dumps(event))
+    
+    async def broadcast_status(self, is_online):
+        recipient_ids = await self.get_notification_recipients()
+        
+        now = timezone.now()
+        readable_time = str(naturaltime(now))
+        
+        event_data = {
+            'type': 'user_status_change',
+            'username': self.user.username,
+            'is_online': is_online,
+            'last_seen': readable_time if not is_online else "Online"
+        }
 
+        for user_id in recipient_ids:
+            # Шлемо кожному другу в його "персональний канал"
+            await self.channel_layer.group_send(
+                f"user_global_{user_id}", 
+                event_data
+            )
+    
     @database_sync_to_async
     def update_user_online(self, status):
         CustomUser.objects.filter(pk=self.user.pk).update(is_online=status, last_seen=timezone.now())
     
+    @database_sync_to_async
+    def get_notification_recipients(self):
+        # Отримуємо ID всіх учасників усіх чатів, де є поточний юзер
+        recipient_ids = CustomUser.objects.filter(
+            chats__participants=self.user
+        ).exclude(id=self.user.id).values_list('id', flat=True).distinct()
+        
+        return list(recipient_ids)
+
     async def notification_message(self, event):
         await self.send(text_data=json.dumps({
             "type": "new_notification",
