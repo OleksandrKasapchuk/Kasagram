@@ -182,6 +182,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         Message.objects.filter(
             chat_id=self.room_name,
             is_read=False).exclude(user=self.scope['user']).update(is_read=True)
+    
+    async def chat_notification(self, event):
+        # Цей метод викликає сам Django, коли в групу прийшло повідомлення
+        # Тепер ми просто пересилаємо це в браузер через WebSocket
+        await self.send(text_data=json.dumps({
+            "action": "new_message",
+            "chat_id": event["chat_id"],
+            "message": event["message"],
+            "unread_count": event.get("unread_count"), 
+            "sender_name": event.get("sender_name")
+        }))
 
 
 class GlobalConsumer(AsyncWebsocketConsumer):
@@ -196,34 +207,44 @@ class GlobalConsumer(AsyncWebsocketConsumer):
             GlobalConsumer.delays[user_id] = task
 
     async def delayed_offline(self, user_id):
-        await asyncio.sleep(5) # Чекаємо 5 секунд
-        
-        # Якщо задача все ще в словнику (її не скасував connect)
-        if user_id in GlobalConsumer.delays:
-            await self.update_user_online(False)
-            await self.broadcast_status(False)
-        
-            del GlobalConsumer.delays[user_id]
+        try:
+            await asyncio.sleep(5) # Чекаємо 5 секунд
+            
+            # Якщо задача все ще в словнику (її не скасував connect)
+            if user_id in GlobalConsumer.delays:
+                await self.update_user_online(False)
+                await self.broadcast_status(False)
+            
+                del GlobalConsumer.delays[user_id]
+        except asyncio.CancelledError:
+            pass
 
     async def connect(self):
+        await self.accept()
+    
         self.user = self.scope['user']
+        print(f"Global tried! User: {self.user}") # Подивимось, хто це (AnonymousUser?)
+
         if self.user.is_authenticated:
+            print(f"Global connected! Username: {self.user.username}")
             user_id = self.user.id
             
-            # ЯКЩО ЮЗЕР ПЕРЕЙШОВ НА НОВУ СТОРІНКУ:
-            # Скасовуємо задачу на офлайн, бо він щойно підключився знову!
+            # Ваша логіка з delays
             if user_id in GlobalConsumer.delays:
                 GlobalConsumer.delays[user_id].cancel()
                 del GlobalConsumer.delays[user_id]
             else:
                 await self.update_user_online(True)
                 await self.broadcast_status(True)
-                
             
             self.user_group = f"user_global_{user_id}"
             await self.channel_layer.group_add(self.user_group, self.channel_name)
             await self.channel_layer.group_add("global_presence", self.channel_name)
-            await self.accept()
+        else:
+            # 2. Якщо користувач не авторизований, повідомляємо про це і закриваємо
+            print("User not authenticated! Closing...")
+            await self.send(text_data=json.dumps({"error": "Unauthorized"}))
+            await self.close(code=4003)
 
     async def user_status_change(self, event):
         await self.send(text_data=json.dumps(event))
@@ -270,15 +291,4 @@ class GlobalConsumer(AsyncWebsocketConsumer):
             "actor_url": event.get("actor_url"),
             "actor_avatar": event.get("actor_avatar"),
             "target_url": event.get("target_url"),
-        }))
-
-    async def chat_notification(self, event):
-        # Цей метод викликає сам Django, коли в групу прийшло повідомлення
-        # Тепер ми просто пересилаємо це в браузер через WebSocket
-        await self.send(text_data=json.dumps({
-            "action": "new_message",
-            "chat_id": event["chat_id"],
-            "message": event["message"],
-            "unread_count": event.get("unread_count"), 
-            "sender_name": event.get("sender_name")
         }))

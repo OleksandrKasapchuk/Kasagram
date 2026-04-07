@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Message, Chat
 from auth_system.serializers import UserSerializer
-from django.urls import reverse
 from common.utils import format_date
 
 
