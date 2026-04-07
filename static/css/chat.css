@@ -54,19 +54,6 @@
     height: 1px;
 }
 
-/* Блок з іконкою в правому нижньому куті */
-.message-status {
-    position: absolute;
-    right: 6px;
-    bottom: 3px;
-    display: flex;
-    align-items: center;
-}
-
-.message-status .material-symbols-outlined {
-    font-size: 14px !important;
-    opacity: 0.8;
-}
 
 .delete-btn {
 	color: transparent;
@@ -77,7 +64,9 @@
 	color: var(--text-main);
 }
 
-
+.status-icon.read {
+    color: #3498db
+}
 .message-wrapper {
     max-width: 75%;
     min-width: 90px; /* Трохи збільшив, щоб час точно влазив */

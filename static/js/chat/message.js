@@ -117,6 +117,15 @@ chatSocket.onmessage = function(e) {
         const messageDiv = document.getElementById(`message-${data.message_id}`);
         if (messageDiv) messageDiv.remove();
         return;
+    } else if (data.type === 'messages_read') {
+        if (!isMe) {
+            document.querySelectorAll('.status-icon').forEach(el => {
+            if (el.innerText.trim() === 'check') {
+                el.innerText = 'done_all';
+                el.classList.add('read');
+            }
+        });
+        }
     } else if (data.type === 'chat_message') {
         const chatMessages = document.getElementById('chat-messages');
         
@@ -228,7 +237,11 @@ function renderOlderMessages(messages){
                         <span class="status-spacer"></span> 
                         <div class="message-meta-container">
                             <time class="message-time">${msg.formatted_time || ''}</time>
-                            ${isMe ? '<span class="material-symbols-outlined status-icon">check</span>' : ''}
+                            ${isMe ? `
+                                <span class="material-symbols-outlined status-icon ${msg.is_read ? 'read' : ''}">
+                                    ${msg.is_read ? 'done_all' : 'check'}
+                                </span>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
