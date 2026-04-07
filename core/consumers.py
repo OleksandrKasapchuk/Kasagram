@@ -182,6 +182,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         Message.objects.filter(
             chat_id=self.room_name,
             is_read=False).exclude(user=self.scope['user']).update(is_read=True)
+    
+    async def chat_notification(self, event):
+        # Цей метод викликає сам Django, коли в групу прийшло повідомлення
+        # Тепер ми просто пересилаємо це в браузер через WebSocket
+        await self.send(text_data=json.dumps({
+            "action": "new_message",
+            "chat_id": event["chat_id"],
+            "message": event["message"],
+            "unread_count": event.get("unread_count"), 
+            "sender_name": event.get("sender_name")
+        }))
 
 
 class GlobalConsumer(AsyncWebsocketConsumer):
@@ -196,58 +207,81 @@ class GlobalConsumer(AsyncWebsocketConsumer):
             GlobalConsumer.delays[user_id] = task
 
     async def delayed_offline(self, user_id):
-        await asyncio.sleep(5) # Чекаємо 5 секунд
-        
-        # Якщо задача все ще в словнику (її не скасував connect)
-        if user_id in GlobalConsumer.delays:
-            await self.update_user_online(False)
+        try:
+            await asyncio.sleep(5) # Чекаємо 5 секунд
             
-            now = timezone.now()
-            readable_time = str(naturaltime(now))
-            await self.channel_layer.group_send(
-                "global_presence",
-                {
-                    'type': 'user_status_change',
-                    'username': self.user.username,
-                    'is_online': False,
-                    'last_seen': readable_time
-                }
-            )
-            del GlobalConsumer.delays[user_id]
+            # Якщо задача все ще в словнику (її не скасував connect)
+            if user_id in GlobalConsumer.delays:
+                await self.update_user_online(False)
+                await self.broadcast_status(False)
+            
+                del GlobalConsumer.delays[user_id]
+        except asyncio.CancelledError:
+            pass
 
     async def connect(self):
+        await self.accept()
+    
         self.user = self.scope['user']
+        print(f"Global tried! User: {self.user}") # Подивимось, хто це (AnonymousUser?)
+
         if self.user.is_authenticated:
+            print(f"Global connected! Username: {self.user.username}")
             user_id = self.user.id
             
-            # ЯКЩО ЮЗЕР ПЕРЕЙШОВ НА НОВУ СТОРІНКУ:
-            # Скасовуємо задачу на офлайн, бо він щойно підключився знову!
+            # Ваша логіка з delays
             if user_id in GlobalConsumer.delays:
                 GlobalConsumer.delays[user_id].cancel()
                 del GlobalConsumer.delays[user_id]
             else:
-                # Якщо його не було в списку на вихід — значить він реально зайшов вперше
                 await self.update_user_online(True)
-                await self.channel_layer.group_send(
-                    "global_presence",
-                    {
-                        'type': 'user_status_change',
-                        'username': self.user.username,
-                        'is_online': True
-                    }
-                )
+                await self.broadcast_status(True)
             
             self.user_group = f"user_global_{user_id}"
             await self.channel_layer.group_add(self.user_group, self.channel_name)
             await self.channel_layer.group_add("global_presence", self.channel_name)
-            await self.accept()
+        else:
+            # 2. Якщо користувач не авторизований, повідомляємо про це і закриваємо
+            print("User not authenticated! Closing...")
+            await self.send(text_data=json.dumps({"error": "Unauthorized"}))
+            await self.close(code=4003)
+
     async def user_status_change(self, event):
         await self.send(text_data=json.dumps(event))
+    
+    async def broadcast_status(self, is_online):
+        recipient_ids = await self.get_notification_recipients()
+        
+        now = timezone.now()
+        readable_time = str(naturaltime(now))
+        
+        event_data = {
+            'type': 'user_status_change',
+            'username': self.user.username,
+            'is_online': is_online,
+            'last_seen': readable_time if not is_online else "Online"
+        }
 
+        for user_id in recipient_ids:
+            # Шлемо кожному другу в його "персональний канал"
+            await self.channel_layer.group_send(
+                f"user_global_{user_id}", 
+                event_data
+            )
+    
     @database_sync_to_async
     def update_user_online(self, status):
         CustomUser.objects.filter(pk=self.user.pk).update(is_online=status, last_seen=timezone.now())
     
+    @database_sync_to_async
+    def get_notification_recipients(self):
+        # Отримуємо ID всіх учасників усіх чатів, де є поточний юзер
+        recipient_ids = CustomUser.objects.filter(
+            chats__participants=self.user
+        ).exclude(id=self.user.id).values_list('id', flat=True).distinct()
+        
+        return list(recipient_ids)
+
     async def notification_message(self, event):
         await self.send(text_data=json.dumps({
             "type": "new_notification",
@@ -257,15 +291,4 @@ class GlobalConsumer(AsyncWebsocketConsumer):
             "actor_url": event.get("actor_url"),
             "actor_avatar": event.get("actor_avatar"),
             "target_url": event.get("target_url"),
-        }))
-
-    async def chat_notification(self, event):
-        # Цей метод викликає сам Django, коли в групу прийшло повідомлення
-        # Тепер ми просто пересилаємо це в браузер через WebSocket
-        await self.send(text_data=json.dumps({
-            "action": "new_message",
-            "chat_id": event["chat_id"],
-            "message": event["message"],
-            "unread_count": event.get("unread_count"), 
-            "sender_name": event.get("sender_name")
         }))
