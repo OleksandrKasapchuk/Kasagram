@@ -30,7 +30,7 @@
         {% for message in messages %}
         <article class="d-flex mx-3 mb-2 {% if message.is_me %}flex-row-reverse{% else %}flex-row{% endif %}" id="message-{{ message.id }}">
             <div class="message-wrapper {% if message.is_me %}sent{% else %}received{% endif %}"
-                oncontextmenu="prepareMessageReply({{ message.id }}, '{{ message.username }}', '{{ message.content|truncatechars:30 }}'); return false;">
+                oncontextmenu="prepareMessageReply({{ message.id }}, '{{ message.user.username }}', '{{ message.content|truncatechars:30 }}'); return false;">
                 
                 <div class="message-content">
                     {% if message.parent_content %}
@@ -95,5 +95,9 @@
         currentUser: "{{ request.user.username }}"
     };
 </script>
+<script src="{% static 'js/chat/chat_socket.js' %}" defer></script>
 <script src="{% static 'js/chat/message.js' %}" defer></script>
+<script src="{% static 'js/chat/scroll.js' %}" defer></script>
+<script src="{% static 'js/chat/reply.js' %}" defer></script>
+<script src="{% static 'js/chat/typing.js' %}" defer></script>
 {% endblock %}

@@ -1,0 +1,66 @@
+/* Картка сповіщення */
+.notif-card {
+    background-color: var(--card-dark); /* Твій колір #1E1E1E */
+    border: 1px solid var(--border-color); /* Твій колір #2D2D2D */
+    border-radius: 12px;
+    transition: transform 0.1s, background-color 0.2s;
+    cursor: pointer;
+}
+
+.notif-card:hover {
+    background-color: #252525; /* Трохи світліше при наведенні */
+    transform: translateY(-1px);
+}
+
+/* Стан непрочитаного */
+.notif-card.unread {
+    /* Можна додати ледь помітну ліву лінію, як в деяких Android темах */
+    border-left: 3px solid #3390ec; 
+}
+
+/* Аватар */
+.notif-avatar {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%; /* CircleShape */
+    display: block;
+}
+
+/* Крапка індикатора (Android style) */
+.notif-dot {
+    width: 10px;
+    height: 10px;
+    background-color: #3390ec; /* Яскравий акцент */
+    border-radius: 50%;
+    margin-left: 10px;
+}
+
+.notif-card {
+    position: relative; /* Обов'язково */
+    background-color: var(--card-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+/* Це посилання невидиме, але воно розтягується на всю .notif-card */
+.stretched-link::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1; /* Рівень 1 */
+    content: "";
+}
+
+/* Робимо аватар та юзернейм клікабельними "ПОВЕРХ" stretched-link */
+.notif-avatar-link, .notif-username {
+    position: relative;
+    z-index: 2; /* Рівень 2 (вище за stretched-link) */
+    display: inline-block;
+}
+
+.notif-username:hover {
+    text-decoration: underline !important;
+}
