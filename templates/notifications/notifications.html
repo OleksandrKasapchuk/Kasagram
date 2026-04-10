@@ -1,28 +1,42 @@
 {% extends 'base.html' %}
-
-{% block content %}
 {% load static %}
-<h1>Notifications</h1>
-<article id="notifications-list" class="ps-2">
-    {% for notification in notifications %}
-        <h4>
-            <a href="{% url 'user-info' notification.actor.pk %}">
-            <img 
-            {% if notification.actor.avatar %}
-                src="{{ notification.actor.avatar.url }}"
-            {% else %}
-                src="{% static 'images/default_avatar.jpg' %}" 
-            {% endif %} class="sidebar-avatar">
-            {{ notification.actor }}
-            </a>
-            <a href="{{ notification.get_url }}">{{ notification.get_message }}, View</a>
-        </h4>
-    {% endfor %}
-    {% endblock %}
-</p>
-{% block scripts %}
-<script>
-    window.DjangoConfig.markNotifReadUrl = "{% url 'mark_notifications_as_read' %}";
-</script>
-<script src="{% static 'js/notifications/notifications.js' %}" defer></script>
+{% load common_tags %}
+{% block content %}
+<div class="main-container d-flex flex-column align-items-center">
+    <div style="width: 100%; max-width: 700px;" class="px-3">
+        <h1 class="mb-4 fw-bold">Notifications</h1>
+        
+        <div id="notifications-list" class="d-flex flex-column gap-2">
+            {% for notification in notifications %}
+                <div class="notif-card {% if not notification.is_read %}unread{% endif %} position-relative">
+                    <div class="d-flex align-items-center p-3">
+                        
+                        <a href="{% url 'user-info' notification.actor.pk %}" class="notif-avatar-link me-3">
+                            <img src="{% if notification.actor.avatar %}{{ notification.actor.avatar.url }}{% else %}{% static 'images/default_avatar.jpg' %}{% endif %}" 
+                                class="notif-avatar" alt="avatar">
+                        </a>
+
+                        <div class="flex-grow-1">
+                            <p class="mb-0">
+                                <a href="{% url 'user-info' notification.actor.pk %}" class="fw-bold notif-username">{{ notification.actor.username }}</a> 
+                                <span class="gray-text ms-1">{{ notification.get_message }}</span>
+                            </p>
+                            <small class="gray-text">{{ notification.created_at|custom_date }}</small>
+                            
+                            <a href="{{ notification.get_url }}" class="stretched-link"></a>
+                        </div>
+
+                        {% if not notification.is_read %}
+                            <div class="notif-dot"></div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="text-center py-5 gray-text">
+                    <p>No notifications yet</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endblock %}
