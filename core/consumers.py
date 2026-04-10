@@ -75,7 +75,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'message_id': msg_data['id'],
                     'timestamp': msg_data['timestamp'].strftime('%H:%M'),
                     'parent_content': msg_data['parent_content'],
-                    'parent_username': msg_data['parent_username']
+                    'parent_username': msg_data['parent_username'],
+                    'temp_id': data.get('temp_id')
                 }
             )
             recipient = await self.get_recipient(self.room_name)
@@ -112,6 +113,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'parent_content': event.get('parent_content'),
             'parent_username': event.get('parent_username'),
             'parent_id': event.get('parent_id'),
+            'temp_id': event.get('temp_id')
         }))
     
     @database_sync_to_async
