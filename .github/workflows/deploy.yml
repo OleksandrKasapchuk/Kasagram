@@ -27,4 +27,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/kasagram:latest
+          tags: ghcr.io/oleksandrkasapchuk/kasagram:latest
