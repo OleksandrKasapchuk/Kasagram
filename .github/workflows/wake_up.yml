@@ -12,4 +12,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send HTTP HEAD request
-        run: curl -I https://kasagram.onrender.com
+        run: curl -I https://kasagram.onrender.com/api/ping/?format=json
