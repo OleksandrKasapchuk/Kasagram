@@ -1,14 +1,12 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async
-from chat.models import Message, Chat
-from auth_system.models import CustomUser
 from django.utils import timezone
 from django.contrib.humanize.templatetags.humanize import naturaltime
 import asyncio
+from .mixins import *
 
 
-class ChatConsumer(AsyncWebsocketConsumer):
+class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = f'chat_{self.room_name}'
@@ -26,78 +24,82 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get("action")
 
-        if action == 'mark_as_read':
-            await self.mark_messages_as_read()
+        handlers = {
+            'mark_as_read': self.handle_mark_read,
+            'typing': self.handle_typing,
+            'delete': self.handle_delete,
+            'chat_message': self.handle_chat_message,
+        }
 
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'messages_read_update',
-                    'username': self.scope['user'].username,
-                }
-            )
-        elif action == 'typing':
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'user_typing',
-                    'username': self.scope['user'].username,
-                    'typing': data['typing']
-                }
-            )
-        elif action == 'delete':
-            message_id = data['message_id']
-            
-            success = await self.delete_message_from_db(message_id)
-            
-            if success:
-                # Розсилаємо всім сигнал на видалення
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'message_deleted',
-                        'message_id': message_id
-                    }
-                )
-        elif action == 'chat_message':
+        handler = handlers.get(action)
+        if handler:
+            await handler(data)
+
+    async def handle_mark_read(self, data):
+        await self.mark_messages_as_read(self.room_name, self.scope['user'])
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {'type': 'messages_read_update', 'username': self.scope['user'].username}
+        )
+
+    async def handle_typing(self, data):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'user_typing',
+                'username': self.scope['user'].username,
+                'typing': data['typing']
+            }
+        )
+
+    async def handle_delete(self, data):
+        message_id = data['message_id']
         
-            message_text = data['message']
-            username = data['username']
-            parent_id = data.get('parent_id')
-            msg_data = await self.save_message(username, self.room_name, message_text, parent_id)
-
+        success = await self.delete_message_from_db(message_id, self.scope['user'])
+        
+        if success:
+            # Розсилаємо всім сигнал на видалення
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    'type': 'chat_message',
-                    'message': message_text,
-                    'username': username,
-                    'message_id': msg_data['id'],
-                    'timestamp': msg_data['timestamp'].strftime('%H:%M'),
-                    'parent_content': msg_data['parent_content'],
-                    'parent_username': msg_data['parent_username'],
-                    'temp_id': data.get('temp_id')
+                    'type': 'message_deleted',
+                    'message_id': message_id
                 }
             )
-            recipient = await self.get_recipient(self.room_name)
+    
+    async def handle_chat_message(self, data):
+        message_text = data['message']
+        username = data['username']
+        parent_id = data.get('parent_id')
+        msg_data = await self.save_message(username, self.room_name, message_text, parent_id)
 
-            unread_cnt = await self.count_unread(recipient, self.room_name)
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': message_text,
+                'username': username,
+                'message_id': msg_data['id'],
+                'timestamp': msg_data['timestamp'].strftime('%H:%M'),
+                'parent_content': msg_data['parent_content'],
+                'parent_username': msg_data['parent_username'],
+                'temp_id': data.get('temp_id')
+            }
+        )
+        recipient = await self.get_recipient(self.room_name)
 
-            await self.channel_layer.group_send(
-                f"user_global_{recipient.id}", 
-                {
-                    "type": "chat_notification",
-                    "message": message_text,
-                    "chat_id": self.room_name,
-                    "sender_name": username,
-                    "unread_count": unread_cnt # Додай це
-                }
-            )
+        unread_cnt = await self.count_unread(recipient, self.room_name)
 
-    @database_sync_to_async
-    def count_unread(self, recipient, chat_id):
-        chat = Chat.objects.get(id=chat_id)
-        return chat.messages.filter(is_read=False).exclude(user=recipient).count()
+        await self.channel_layer.group_send(
+            f"user_global_{recipient.id}", 
+            {
+                "type": "chat_notification",
+                "message": message_text,
+                "chat_id": self.room_name,
+                "sender_name": username,
+                "unread_count": unread_cnt
+            }
+        )
 
     # Обробка отриманого повідомлення групою
     async def chat_message(self, event):
@@ -116,12 +118,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'temp_id': event.get('temp_id')
         }))
     
-    @database_sync_to_async
-    def get_recipient(self, chat_id):
-        chat = Chat.objects.get(id=chat_id)
-        # Повертає учасника, який не є поточним юзером
-        return chat.participants.exclude(id=self.scope['user'].id).first()
-    
     # Обробник події видалення для групи
     async def message_deleted(self, event):
         await self.send(text_data=json.dumps({
@@ -135,39 +131,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'username': event['username'],
             'typing': event['typing']
         }))
-
-    @database_sync_to_async
-    def delete_message_from_db(self, message_id):
-        try:
-            user = self.scope['user']
-            msg = Message.objects.get(id=message_id, user=user)
-            msg.delete()
-            return True
-        except Message.DoesNotExist:
-            return False
     
-    @database_sync_to_async
-    def save_message(self, username, chat_id, message, parent_id=None):
-        user = CustomUser.objects.get(username=username)
-        chat = Chat.objects.get(id=chat_id)
-        parent = None
-        
-        if parent_id:
-            try:
-                parent = Message.objects.get(id=parent_id)
-            except Message.DoesNotExist:
-                parent = None
-                
-        msg = Message.objects.create(user=user, chat=chat, content=message, parent=parent)
-        
-        # Створюємо словник з даними, щоб не робити запитів у асинхронному коді
-        result = {
-            'id': msg.id,
-            'timestamp': msg.timestamp,
-            'parent_content': msg.parent.content if msg.parent else None,
-            'parent_username': msg.parent.user.username if msg.parent else None,
-        }
-        return result
     
     async def messages_read_update(self, event):
         is_me = self.scope['user'].username == event['username']
@@ -179,11 +143,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'is_me': is_me
         }))
     
-    @database_sync_to_async
-    def mark_messages_as_read(self):
-        Message.objects.filter(
-            chat_id=self.room_name,
-            is_read=False).exclude(user=self.scope['user']).update(is_read=True)
+    
     
     async def chat_notification(self, event):
         # Цей метод викликає сам Django, коли в групу прийшло повідомлення
@@ -197,7 +157,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
 
-class GlobalConsumer(AsyncWebsocketConsumer):
+class GlobalConsumer(AsyncWebsocketConsumer, PresenceMixin):
     delays = {}
 
     async def disconnect(self, close_code):
@@ -210,22 +170,20 @@ class GlobalConsumer(AsyncWebsocketConsumer):
 
     async def delayed_offline(self, user_id):
         try:
-            await asyncio.sleep(5) # Чекаємо 5 секунд
-            
-            # Якщо задача все ще в словнику (її не скасував connect)
+            await asyncio.sleep(5)
             if user_id in GlobalConsumer.delays:
-                await self.update_user_online(False)
+                # Важливо: використовуємо метод міксина
+                await self.update_user_online(self.user, False) 
                 await self.broadcast_status(False)
-            
-                del GlobalConsumer.delays[user_id]
         except asyncio.CancelledError:
-            pass
+            pass # Це нормально, користувач просто перезайшов
+        finally:
+            GlobalConsumer.delays.pop(user_id, None)
 
     async def connect(self):
         await self.accept()
     
         self.user = self.scope['user']
-        print(f"Global tried! User: {self.user}") # Подивимось, хто це (AnonymousUser?)
 
         if self.user.is_authenticated:
             print(f"Global connected! Username: {self.user.username}")
@@ -236,7 +194,7 @@ class GlobalConsumer(AsyncWebsocketConsumer):
                 GlobalConsumer.delays[user_id].cancel()
                 del GlobalConsumer.delays[user_id]
             else:
-                await self.update_user_online(True)
+                await self.update_user_online(self.scope['user'], True)
                 await self.broadcast_status(True)
             
             self.user_group = f"user_global_{user_id}"
@@ -252,7 +210,7 @@ class GlobalConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event))
     
     async def broadcast_status(self, is_online):
-        recipient_ids = await self.get_notification_recipients()
+        recipient_ids = await self.get_notification_recipients(self.scope['user'])
         
         now = timezone.now()
         readable_time = str(naturaltime(now))
@@ -270,19 +228,6 @@ class GlobalConsumer(AsyncWebsocketConsumer):
                 f"user_global_{user_id}", 
                 event_data
             )
-    
-    @database_sync_to_async
-    def update_user_online(self, status):
-        CustomUser.objects.filter(pk=self.user.pk).update(is_online=status, last_seen=timezone.now())
-    
-    @database_sync_to_async
-    def get_notification_recipients(self):
-        # Отримуємо ID всіх учасників усіх чатів, де є поточний юзер
-        recipient_ids = CustomUser.objects.filter(
-            chats__participants=self.user
-        ).exclude(id=self.user.id).values_list('id', flat=True).distinct()
-        
-        return list(recipient_ids)
 
     async def notification_message(self, event):
         await self.send(text_data=json.dumps({

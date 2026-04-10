@@ -40,3 +40,10 @@
     </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+    window.DjangoConfig.markNotifReadUrl = "{% url 'mark_notifications_as_read' %}";
+</script>
+<script src="{% static 'js/notifications/notifications.js' %}" defer></script>
+{% endblock %}

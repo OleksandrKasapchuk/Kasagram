@@ -97,14 +97,36 @@ globalSocket.onmessage = function(e) {
 };
 
 function injectNewNotification(container, data) {
-    const newBox = document.createElement('h4');
-    
-    newBox.innerHTML = `
-        <a href="${data.actor_url}">
-            <img src="${data.actor_avatar}" class="sidebar-avatar">
-            ${data.actor_name}
-        </a>
-        <a href="${data.target_url}"> ${data.message}, View</a>
+    // Створюємо головний контейнер картки
+    const newNotif = document.createElement('div');
+    newNotif.className = 'notif-card unread position-relative'; // Додаємо 'unread' за замовчуванням
+
+    // Формуємо внутрішній HTML, копіюючи структуру з шаблону
+    newNotif.innerHTML = `
+        <div class="d-flex align-items-center p-3">
+            <a href="${data.actor_url}" class="notif-avatar-link me-3">
+                <img src="${data.actor_avatar || '/static/images/default_avatar.jpg'}" 
+                     class="notif-avatar" alt="avatar">
+            </a>
+
+            <div class="flex-grow-1">
+                <p class="mb-0">
+                    <a href="${data.actor_url}" class="fw-bold notif-username">${data.actor_name}</a> 
+                    <span class="gray-text ms-1">${data.message}</span>
+                </p>
+                <small class="gray-text">Just now</small>
+                
+                <a href="${data.target_url}" class="stretched-link"></a>
+            </div>
+
+            <div class="notif-dot"></div>
+        </div>
     `;
-    container.prepend(newBox);
+
+    // Додаємо в початок списку (prepend)
+    container.prepend(newNotif);
+
+    // Видаляємо напис "No notifications yet", якщо він є
+    const emptyMsg = container.querySelector('.text-center.py-5');
+    if (emptyMsg) emptyMsg.remove();
 }
