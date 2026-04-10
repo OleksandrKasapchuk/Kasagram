@@ -28,3 +28,5 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/oleksandrkasapchuk/kasagram:latest
+      - name: Trigger Render Deploy
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
