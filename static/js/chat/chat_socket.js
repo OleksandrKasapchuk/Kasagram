@@ -68,11 +68,11 @@ chatSocket.onmessage = function(e) {
                 
                 const replyBtn = tempMsg.querySelector('.material-symbols-outlined.pointer');
                 if (replyBtn) {
-                    replyBtn.setAttribute('onclick', `prepareMessageReply(${data.message_id}, '${data.username}', '${data.message.substring(0, 30)}')`);
+                    replyBtn.setAttribute('onclick', `prepareMessageReply(${data.message_id}, '${data.username}', '${data.content.substring(0, 30)}')`);
                 }
 
                 // 5. Оновлюємо контекстне меню (oncontextmenu)
-                wrapper.setAttribute('oncontextmenu', `prepareMessageReply(${data.message_id}, '${data.username}', '${(data.message || "").substring(0, 30)}'); return false;`);
+                wrapper.setAttribute('oncontextmenu', `prepareMessageReply(${data.message_id}, '${data.username}', '${(data.content || "").substring(0, 30)}'); return false;`);
 
                 return; // Закінчуємо, повідомлення вже в чаті
             }

@@ -68,16 +68,16 @@ class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
             )
     
     async def handle_chat_message(self, data):
-        message_text = data['message']
+        content = data['message']
         username = data['username']
         parent_id = data.get('parent_id')
-        msg_data = await self.save_message(username, self.room_name, message_text, parent_id)
+        msg_data = await self.save_message(username, self.room_name, content, parent_id)
 
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
-                'message': message_text,
+                'content': content,
                 'username': username,
                 'message_id': msg_data['id'],
                 'timestamp': msg_data['timestamp'].strftime('%H:%M'),
@@ -86,7 +86,7 @@ class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
                 'temp_id': data.get('temp_id')
             }
         )
-        recipient = await self.get_recipient(self.room_name)
+        recipient = await self.get_recipient(self.room_name, self.scope['user'].id)
 
         unread_cnt = await self.count_unread(recipient, self.room_name)
 
@@ -94,7 +94,7 @@ class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
             f"user_global_{recipient.id}", 
             {
                 "type": "chat_notification",
-                "message": message_text,
+                "message": content,
                 "chat_id": self.room_name,
                 "sender_name": username,
                 "unread_count": unread_cnt
@@ -107,7 +107,7 @@ class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
         # Надсилаємо назад на фронтенд (в браузер)
         await self.send(text_data=json.dumps({
             'type': 'chat_message',
-            'message': event['message'],
+            'content': event['content'],
             'username': event['username'],
             'message_id': event['message_id'],
             'is_me': is_me,
@@ -141,19 +141,6 @@ class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
             'type': 'messages_read',
             'username': event['username'],
             'is_me': is_me
-        }))
-    
-    
-    
-    async def chat_notification(self, event):
-        # Цей метод викликає сам Django, коли в групу прийшло повідомлення
-        # Тепер ми просто пересилаємо це в браузер через WebSocket
-        await self.send(text_data=json.dumps({
-            "action": "new_message",
-            "chat_id": event["chat_id"],
-            "message": event["message"],
-            "unread_count": event.get("unread_count"), 
-            "sender_name": event.get("sender_name")
         }))
 
 
@@ -238,4 +225,15 @@ class GlobalConsumer(AsyncWebsocketConsumer, PresenceMixin):
             "actor_url": event.get("actor_url"),
             "actor_avatar": event.get("actor_avatar"),
             "target_url": event.get("target_url"),
+        }))
+
+    async def chat_notification(self, event):
+        # Цей метод викликає сам Django, коли в групу прийшло повідомлення
+        # Тепер ми просто пересилаємо це в браузер через WebSocket
+        await self.send(text_data=json.dumps({
+            "action": "new_message",
+            "chat_id": event["chat_id"],
+            "message": event["message"],
+            "unread_count": event.get("unread_count"), 
+            "sender_name": event.get("sender_name")
         }))
