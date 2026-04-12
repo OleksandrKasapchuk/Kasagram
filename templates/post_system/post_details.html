@@ -11,12 +11,12 @@
 		<img src="{{post.media.url}}" class="post-detail-media">
 		<article class="d-flex flex-column p-3 py-0 post-detail-sidebar">
 			<section class="post-user-info d-flex border-bottom border-secondary">
-				<a href="{% url 'user-info' post.user.pk %}"><img src="{{ post.user.avatar.url }}" class="sidebar-avatar me-3"></a>
+				<a href="{% url 'user-info' post.user.pk %}"><img src="{% if post.user.avatar %} {{ post.user.avatar.url }} {% else %} {% static 'images/default_avatar.jpg' %}{% endif %}" class="sidebar-avatar me-3"></a>
 				<a href="{% url 'user-info' post.user.pk %}"><b>{{ post.user }}</b></a>
 			</section>
 			{% if post.content %}
 				<section class="d-flex">
-					<a href="{% url 'user-info' post.user.pk %}"><img src="{{ post.user.avatar.url }}" class="sidebar-avatar me-3"></a>
+					<a href="{% url 'user-info' post.user.pk %}"><img src="{% if post.user.avatar %} {{ post.user.avatar.url }} {% else %} {% static 'images/default_avatar.jpg' %}{% endif %}" class="sidebar-avatar me-3"></a>
 					<p><a href="{% url 'user-info' post.user.pk %}"><b>{{post.user.username}}</b></a> {{ post.content }}</p>
 				</section>	
 			{% endif %}

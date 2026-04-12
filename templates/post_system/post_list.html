@@ -28,8 +28,8 @@
 						<a href="{% url 'post:post-details' post.pk %}" class="p-2"><span class="material-symbols-outlined pointer">comment</span></a>
 				</section>
 				<h5><span id="like-count-{{ post.pk }}">{{ post.likes.count }}</span> likes</h5>
-				{% if request.user == post.user %}
-					<figcaption><a href="{% url 'user-info' post.user.pk %}"><b>{{post.user.username}}</b></a> {{ post.content }}</figcaption>
+				{% if post.content %}
+					<figcaption class="truncate-text"><a href="{% url 'user-info' post.user.pk %}"><b>{{post.user}}</b></a> {{ post.content }}</figcaption>
 				{% endif %}
 			</figure>
 		</section>

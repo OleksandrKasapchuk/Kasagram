@@ -103,7 +103,7 @@ chatSocket.onmessage = function(e) {
                 <div class="message-wrapper position-relative ${isMe ? 'sent' : 'received'}"
                      oncontextmenu="prepareMessageReply(${data.message_id}, '${data.username}', '${(data.parent_content || "").substring(0, 30)}'); return false;">
                     <div class="message-content px-3 py-2">
-                        ${replyHtml} <span class="message-text">${data.message}</span>
+                        ${replyHtml} <span class="message-text">${data.content}</span>
                         <span class="status-spacer"></span> 
                         <div class="message-meta-container">
                             <time class="message-time">${msgTime}</time>
@@ -113,7 +113,7 @@ chatSocket.onmessage = function(e) {
                 </div>
                 <div class="d-flex align-items-center">
                     <span class="material-symbols-outlined pointer text-secondary small mx-1" 
-                          onclick="prepareMessageReply(${data.message_id}, '${data.username}', '${data.message.substring(0, 30)}')">
+                          onclick="prepareMessageReply(${data.message_id}, '${data.username}', '${data.content.substring(0, 30)}')">
                         reply
                     </span>
                     ${isMe ? `

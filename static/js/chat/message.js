@@ -59,7 +59,7 @@ function SendMessage() {
         // 2. Відправляємо на сервер
         chatSocket.send(JSON.stringify({
             'action': 'chat_message',
-            'message': content,
+            'content': content,
             'username': window.ChatConfig.currentUser,
             'parent_id': parentId ? parentId : null,
             'temp_id': tempId // Додаємо temp_id, щоб бекенд повернув його нам

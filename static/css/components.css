@@ -105,3 +105,11 @@ li > a {
     border-radius: 8px;
     border: 1px solid var(--border-color);
 }
+
+.truncate-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Кількість рядків, які хочеш залишити */
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    text-overflow: ellipsis; /* Додає ті самі три крапки */
+}

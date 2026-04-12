@@ -28,7 +28,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
     # Включаємо список постів через інший серіалізатор
     def get_user_posts(self, obj):
         from post_system.serializers import PostSerializer # Імпорт всередині!
-        posts = obj.posts.all() # або obj.posts.all()
+        posts = obj.posts.all()
         return PostSerializer(posts, many=True).data
 
     user_posts = serializers.SerializerMethodField()
