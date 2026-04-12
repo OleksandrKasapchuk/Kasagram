@@ -1,34 +1,55 @@
-# Використовуємо 3.12-slim-bookworm (найсвіжіший стабільний Debian)
-FROM python:3.12-slim-bookworm
+# --- Stage 1: Builder ---
+FROM python:3.12-slim-bookworm AS builder
 
-# Налаштування Python
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Встановлюємо системні залежності
-# gcc потрібен для компіляції деяких пакетів, 
-# libpq-dev потрібен, якщо ти використовуєш PostgreSQL (рекомендовано для Render)
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Кешування залежностей
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Використовуємо кеш для pip, щоб не перекачувати пакети
+RUN --mount=type=cache,target=/root/.cache/pip \
+
+    pip install --upgrade pip && \
+
+    pip install --prefix=/install -r requirements.txt
+
+# --- Stage 2: Final Runner ---
+FROM python:3.12-slim-bookworm
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=10000
+
+WORKDIR /app
+
+# Встановлюємо ТІЛЬКИ runtime бібліотеки (libpq для бази)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копіюємо встановлені пакети з першого етапу
+COPY --from=builder /install /usr/local
 
 # Копіюємо проєкт
 COPY . .
 
-# Збираємо статику (Render збереже її під час білду)
+# Створюємо юзера, щоб не запускати від root
+RUN useradd -m myuser && \
+    chown -R myuser:myuser /app
+
+USER myuser
+
+# Збираємо статику
 RUN python manage.py collectstatic --noinput
 
-# Render ігнорує EXPOSE, але для документації залишимо змінну
-ENV PORT=10000
 EXPOSE 10000
 
-# Використовуємо Daphne для ASGI
-# Зверни увагу: заміни 'social_media.asgi' на шлях до твого asgi файлу
 CMD daphne -b 0.0.0.0 -p $PORT social_media.asgi:application
