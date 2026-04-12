@@ -68,7 +68,7 @@ class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
             )
     
     async def handle_chat_message(self, data):
-        content = data['message']
+        content = data['content']
         username = data['username']
         parent_id = data.get('parent_id')
         msg_data = await self.save_message(username, self.room_name, content, parent_id)
