@@ -27,7 +27,7 @@
                             <section class="d-flex flex-column">
                                 <span class="last-msg-time text-secondary small d-flex">
                                     {% if chat.last_message %}
-                                        {% if request.user == chat.last_message.user %}
+                                        {% if chat.last_message.is_me %}
                                             <span class="material-symbols-outlined pe-2 fs-5 {% if chat.last_message.is_read %}read{% endif %}">
                                                 {% if message.is_read %}done_all{% else %}check{% endif %}
                                             </span>

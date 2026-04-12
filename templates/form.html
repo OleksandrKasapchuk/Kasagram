@@ -15,7 +15,11 @@
             {% elif request.resolver_match.url_name == 'edit-user' %}
                 Edit User
             {% elif form.instance.pk %}
-                Edit Post
+                {% if comment %}
+                    Edit Comment
+                {% elif post %}
+                    Edit Post
+                {% endif %}
             {% else %}
                 Create Post
             {% endif %}
