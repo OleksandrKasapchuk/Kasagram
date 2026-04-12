@@ -12,6 +12,7 @@ from rest_framework.generics import RetrieveAPIView
 from .models import Post
 from .serializers import PostDetailSerializer 
 
+
 class PingView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):

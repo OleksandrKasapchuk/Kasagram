@@ -42,7 +42,7 @@ window.onscroll = function() {
 
 function renderPost(post) {
     // Перевіряємо аватар
-    const avatarUrl = post.user.avatar ? post.user.avatar : '/static/images/default_avatar.jpg';
+    const avatarUrl = post.user.avatar_url ? post.user.avatar_url : '/static/images/default_avatar.jpg';
     
     // Перевіряємо, чи лайкнув поточний юзер (використовуємо поле is_liked з серіалізатора)
     const likedClass = post.is_liked ? 'liked' : '';
@@ -70,16 +70,16 @@ function renderPost(post) {
                         </span>
                         
                         ${isOwner ? `
-                            <a href="/post/update/${post.id}/" class="p-2"><span class="material-symbols-outlined pointer">edit</span></a>
-                            <a href="/post/delete/${post.id}/" class="p-2"><span class="material-symbols-outlined pointer">delete</span></a>
+                            <a href="/update_post/${post.id}/" class="p-2"><span class="material-symbols-outlined pointer">edit</span></a>
+                            <a href="/delete_post/${post.id}/" class="p-2"><span class="material-symbols-outlined pointer">delete</span></a>
                         ` : ''}
                         
-                        <a href="/post/details/${post.id}/" class="p-2"><span class="material-symbols-outlined pointer">comment</span></a>
+                        <a href="/post_details/${post.id}/" class="p-2"><span class="material-symbols-outlined pointer">comment</span></a>
                     </section>
                     <h5><span id="like-count-${post.id}">${post.likes_count}</span> likes</h5>
                     
-                    ${isOwner ? `
-                        <figcaption>
+                    ${post.content ? `
+                        <figcaption class="truncate-text">
                             <a href="/user/${post.user.id}/"><b>${post.user.username}</b></a> ${post.content}
                         </figcaption>
                     ` : ''}
