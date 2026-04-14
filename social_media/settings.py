@@ -42,12 +42,17 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://web-social-media-3.onrender.com",
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'kasagram.onrender.com']
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
-
 
 INSTALLED_APPS = [
     'daphne',
@@ -62,6 +67,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'rest_framework',
     'rest_framework.authtoken',
+    "corsheaders",
     'core',
     'common',
 	'auth_system',
@@ -81,6 +87,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -119,6 +126,12 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

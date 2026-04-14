@@ -86,3 +86,9 @@ class ToggleFollowAPIView(APIView):
             'followers_count': user_to.followers.count(),
             'following_count': user_to.following.count(),
         }, status=status.HTTP_200_OK)
+
+
+class MeAPIView(APIView):
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
