@@ -6,4 +6,5 @@ urlpatterns = [
     path('', include("chat.api_urls")),
     path('', include("notifications.api_urls")),
     path('', include("auth_system.api_urls")),
+    path('', include("users.api_urls"))
 ]

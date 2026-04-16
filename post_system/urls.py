@@ -8,8 +8,6 @@ urlpatterns = [
 	path('update_post/<int:pk>', post_views.PostUpdateView.as_view(), name='update_post'),
 	path('delete_post/<int:pk>', post_views.PostDeleteView.as_view(), name='delete_post'),
 	path('update-comment/<int:pk>/', post_views.UpdateCommentView.as_view(), name='update-comment'),
-	path('followers/<int:pk>', post_views.FollowerView.as_view(), name='get-followers'),
-    path('following/<int:pk>', post_views.FollowingView.as_view(), name='get-following'),
 ]
 
 app_name = 'post' 

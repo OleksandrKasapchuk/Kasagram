@@ -25,8 +25,8 @@
                 </article>
                 <ul class="gap">
                     <li><b>{{user.posts.count}}</b> posts</li>
-                    <li><a href="{% url 'post:get-followers' user.pk %}"><span id="followers-count"><b>{{ user.followers.count }}</b></span> followers</a></li> 
-                    <li><a href="{% url 'post:get-following' user.pk %}"><span id="following-count"><b>{{ user.following.count }}</b></span> following</a></li>
+                    <li><a href="{% url 'get-followers' user.pk %}"><span id="followers-count"><b>{{ user.followers.count }}</b></span> followers</a></li> 
+                    <li><a href="{% url 'get-following' user.pk %}"><span id="following-count"><b>{{ user.following.count }}</b></span> following</a></li>
                 </ul>
                 <article class="d-flex flex-column">
                     <b>{{user.first_name}} {{user.last_name}}</b>

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, Subscription
+from auth_system.models import CustomUser, Subscription
 
 
 class RegisterSerializer(serializers.ModelSerializer):

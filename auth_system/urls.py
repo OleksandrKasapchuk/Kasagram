@@ -16,8 +16,4 @@ urlpatterns = [
         success_url='/', # куди кидати після зміни
         extra_context={'title': 'Change Password'}
     ), name='password_change'),
-
-    # Профіль та редагування
-    path('user-info/<int:pk>/', views.UserDetailView.as_view(), name='user-info'),
-    path('edit-user/', views.UserUpdateView.as_view(), name='edit-user'),
 ]
