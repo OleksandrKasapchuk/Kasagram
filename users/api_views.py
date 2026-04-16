@@ -56,24 +56,25 @@ class MeAPIView(APIView):
 
 class UserRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
+    def get_serializer_class(self):
+        # Для перегляду конкретного профілю (retrieve) юзаємо повний дітейл
+        if self.action == 'retrieve':
+            return UserDetailSerializer
+        # Для списків (list, followers, following) юзаємо легкий
+        return UserSerializer
 
     # Ендпоінт: /api/users/<pk>/followers/
     @action(detail=True, methods=['get'])
     def followers(self, request, pk=None):
         user = self.get_object()
-        # Отримуємо всіх, хто підписаний на цього юзера
         followers = CustomUser.objects.filter(following__user_to=user)
-        
+        # get_serializer автоматично візьме UserSerializer з get_serializer_class
         serializer = self.get_serializer(followers, many=True)
         return Response(serializer.data)
 
-    # Ендпоінт: /api/users/<pk>/following/
     @action(detail=True, methods=['get'])
     def following(self, request, pk=None):
         user = self.get_object()
-        # Отримуємо всіх, на кого підписаний цей юзер
         following = CustomUser.objects.filter(followers__user_from=user)
-        
         serializer = self.get_serializer(following, many=True)
         return Response(serializer.data)

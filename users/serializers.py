@@ -25,24 +25,26 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class UserDetailSerializer(serializers.ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
-    # Включаємо список постів через інший серіалізатор
-    def get_user_posts(self, obj):
-        from post_system.serializers import PostSerializer # Імпорт всередині!
-        posts = obj.posts.all()
-        return PostSerializer(posts, many=True).data
-
-    user_posts = serializers.SerializerMethodField()
+    posts = serializers.SerializerMethodField() # 1. Оголошуємо поле
     
-    # Можна додати додаткові поля, яких немає в базовому
-    posts_count = serializers.IntegerField(source='post_set.count', read_only=True)
+    # Використовуй ту саму назву для source, що і для отримання постів
+    posts_count = serializers.IntegerField(source='posts.count', read_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'first_name', 'last_name', 'avatar_url', 'is_online', 'last_seen', 'bio','user_posts', 'posts_count']
+        fields = [
+            'id', 'username', 'first_name', 'last_name', 'avatar_url', 
+            'is_online', 'last_seen', 'bio', 'posts', 'posts_count'
+        ]
+
+    # 2. Оголошуємо метод ПІСЛЯ поля або в будь-якому місці, але головне — правильна назва
+    def get_posts(self, obj):
+        from post_system.serializers import PostSerializer
+        # Спробуй обгорнути в list(), щоб бути впевненим, що QuerySet обчислився
+        return PostSerializer(obj.posts.all(), many=True).data
 
     def get_avatar_url(self, obj):
         if obj.avatar:
-            # Повертаємо пряме посилання на картинку в Cloudinary
             return obj.avatar.url
         return None
 
