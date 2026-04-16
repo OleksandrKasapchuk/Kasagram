@@ -58,7 +58,6 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.avatar:
             # Повертаємо пряме посилання на картинку в Cloudinary
             return obj.avatar.url
-        # Можна повернути дефолтну картинку, якщо аватара немає
         return None
 
 

@@ -43,7 +43,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'kasagram.onrender.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'kasagram.onrender.com', '10.0.2.2']
 
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -84,6 +84,15 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated', # закриваємо API від анонімів
     ],
+    'DEFAULT_PARSER_CLASSES': (
+        'djangorestframework_camel_case.parser.CamelCaseFormParser',
+        'djangorestframework_camel_case.parser.CamelCaseMultiPartParser',
+        'djangorestframework_camel_case.parser.CamelCaseJSONParser',
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
+        'djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer',
+    ),
 }
 
 MIDDLEWARE = [
