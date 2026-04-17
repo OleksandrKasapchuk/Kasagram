@@ -13,7 +13,7 @@ class UserDetailAPIView(APIView):
         user = get_object_or_404(CustomUser, pk=pk)
         
         # Перетворюємо об'єкт юзера в JSON
-        serializer = UserDetailSerializer(user)
+        serializer = UserDetailSerializer(user, context={'request': request})
         
         return Response(serializer.data)
 
@@ -30,19 +30,19 @@ class ToggleFollowAPIView(APIView):
             )
 
         subscription_qs = Subscription.objects.filter(
-            user_from=request.user, 
-            user_to=user_to
+            follower=request.user, 
+            following=user_to
         )
 
         if subscription_qs.exists():
             subscription_qs.delete()
-            following = False
+            success = False
         else:
-            Subscription.objects.create(user_from=request.user, user_to=user_to)
-            following = True
+            Subscription.objects.create(follower=request.user, following=user_to)
+            success = True
         
         return Response({
-            'following': following,
+            'is_following': success,
             'followers_count': user_to.followers.count(),
             'following_count': user_to.following.count(),
         }, status=status.HTTP_200_OK)
@@ -67,7 +67,7 @@ class UserRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['get'])
     def followers(self, request, pk=None):
         user = self.get_object()
-        followers = CustomUser.objects.filter(following__user_to=user)
+        followers = CustomUser.objects.filter(following__following=user)
         # get_serializer автоматично візьме UserSerializer з get_serializer_class
         serializer = self.get_serializer(followers, many=True)
         return Response(serializer.data)
@@ -75,6 +75,6 @@ class UserRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['get'])
     def following(self, request, pk=None):
         user = self.get_object()
-        following = CustomUser.objects.filter(followers__user_from=user)
+        following = CustomUser.objects.filter(followers__follower=user)
         serializer = self.get_serializer(following, many=True)
         return Response(serializer.data)

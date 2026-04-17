@@ -15,8 +15,8 @@ class UserDetailView(LoginRequiredMixin, DetailView):
         target_user = self.get_object()
         
         is_following = Subscription.objects.filter(
-            user_from=self.request.user, 
-            user_to=target_user
+            follower=self.request.user, 
+            following=target_user
         ).exists()
         
         context['is_following'] = is_following
@@ -43,13 +43,13 @@ class FollowerView(ListView):
 
 	def get_queryset(self):
 		user = CustomUser.objects.get(pk=self.kwargs['pk'])
-		return user.followers.all().values_list('user_from', flat=True)
+		return user.followers.all().values_list('follower', flat=True)
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['type'] = "Follower"
 		context['users'] = CustomUser.objects.filter(pk__in=self.get_queryset())
-		context["following"] = CustomUser.objects.get(pk=self.kwargs['pk']).following.values_list('user_to_id', flat=True)
+		context["following"] = CustomUser.objects.get(pk=self.kwargs['pk']).following.values_list('following_id', flat=True)
 		return context
 
 
@@ -59,11 +59,11 @@ class FollowingView(ListView):
 	
 	def get_queryset(self):
 		user = CustomUser.objects.get(pk=self.kwargs['pk'])
-		return user.following.all().values_list('user_to', flat=True)
+		return user.following.all().values_list('following', flat=True)
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['type'] = "Following"
 		context['users'] = CustomUser.objects.filter(pk__in=self.get_queryset())
-		context["following"] = CustomUser.objects.get(pk=self.kwargs['pk']).following.values_list('user_to_id', flat=True)
+		context["following"] = CustomUser.objects.get(pk=self.kwargs['pk']).following.values_list('following_id', flat=True)
 		return context
