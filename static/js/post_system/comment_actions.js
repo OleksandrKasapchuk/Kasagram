@@ -38,11 +38,11 @@ function SendComment(postId) {
         const newCommentHtml = `
             <section class="d-flex flex-column flex-grow-1">
                 <section class="d-flex">
-                    <a href="/auth/user-info/${data.user.id}/">
+                    <a href="/users/${data.user.id}/">
                         <img src="${data.user.avatar_url}" class="sidebar-avatar me-3">
                     </a>
                     <p>
-                        <a href="/auth/user-info/${data.user.id}/"><b>${data.user.username}</b></a> 
+                        <a href="/users/${data.user.id}"><b>${data.user.username}</b></a> 
                         ${data.content}
                     </p>
                 </section>

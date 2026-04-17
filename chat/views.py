@@ -56,12 +56,12 @@ class ChatDetailView(LoginRequiredMixin, ChatMessageMixin , View):
 
 @login_required
 def start_chat(request, pk):
-    user_to_chat = get_object_or_404(CustomUser, pk=pk)
-    chat = Chat.objects.filter(participants=request.user).filter(participants=user_to_chat).first()
+    following_chat = get_object_or_404(CustomUser, pk=pk)
+    chat = Chat.objects.filter(participants=request.user).filter(participants=following_chat).first()
     
     if chat:
         return redirect('chat:chat_detail', pk=chat.pk)
     else:
         new_chat = Chat.objects.create()
-        new_chat.participants.add(request.user, user_to_chat)
+        new_chat.participants.add(request.user, following_chat)
         return redirect('chat:chat_detail', pk=new_chat.pk)

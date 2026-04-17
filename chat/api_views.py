@@ -9,7 +9,7 @@ from .serializers import ChatSerializer
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.response import Response
-from auth_system.serializers import UserSerializer
+from users.serializers import UserSerializer
 
 
 class ChatPagination(PageNumberPagination):

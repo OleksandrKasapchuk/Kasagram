@@ -32,8 +32,8 @@ class PostQuerysetMixin:
 
         if category == 'following' and self.request.user.is_authenticated:
             following_users = Subscription.objects.filter(
-                user_from=self.request.user
-            ).values_list('user_to', flat=True)
+                follower=self.request.user
+            ).values_list('following', flat=True)
             queryset = queryset.filter(user__in=following_users)
         
         return queryset.order_by('-date_published')

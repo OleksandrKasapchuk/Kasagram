@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from common.utils import format_date
-from auth_system.serializers import UserSerializer
+from users.serializers import UserSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):

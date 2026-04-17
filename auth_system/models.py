@@ -14,12 +14,12 @@ class CustomUser(AbstractUser):
     
 
 class Subscription(models.Model):
-    user_from = models.ForeignKey(CustomUser, related_name='following',on_delete=models.CASCADE)
-    user_to = models.ForeignKey(CustomUser,related_name='followers',on_delete=models.CASCADE)
+    follower = models.ForeignKey(CustomUser, related_name='following',on_delete=models.CASCADE)
+    following = models.ForeignKey(CustomUser,related_name='followers',on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user_from', 'user_to')
+        unique_together = ('follower', 'following')
 
     def __str__(self):
-        return f'{self.user_from} follows {self.user_to}'
+        return f'{self.follower} follows {self.following}'
