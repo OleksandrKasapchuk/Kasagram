@@ -45,14 +45,6 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'kasagram.onrender.com', '10.0.2.2']
 
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "authorization",
-    "content-type",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-]
 
 INSTALLED_APPS = [
     'daphne',
@@ -140,6 +132,7 @@ CHANNEL_LAYERS = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
+    "https://kasagram.vercel.app",
 
 ]
 
@@ -169,7 +162,6 @@ if db_url:
     }
     DATABASES['default']['OPTIONS'] = {
         'sslmode': 'require',
-        'target_session_attrs': 'read-write',
     }
 else:
     DATABASES = {
@@ -209,10 +201,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-]
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
@@ -235,8 +224,5 @@ AUTH_USER_MODEL = 'auth_system.CustomUser'
 LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
-
-MEDIA_URL = "media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
