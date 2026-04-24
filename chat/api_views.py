@@ -5,7 +5,6 @@ from rest_framework.generics import ListAPIView
 from common.permissions import *
 from django.shortcuts import get_object_or_404
 from .mixins import ChatMessageMixin
-from .serializers import ChatSerializer
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.response import Response

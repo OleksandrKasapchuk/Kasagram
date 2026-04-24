@@ -57,13 +57,13 @@ function renderPost(post) {
             <section>
                 <article class="post-user-info d-flex">
                     <a href="/user/${post.user.id}/">
-                        <img src="${avatarUrl}" class="profile-avatar" style="width: 36px;height: 36px;">
+                        <img src="${post.user.avatarUrl}" class="profile-avatar" style="width: 36px;height: 36px;">
                     </a>
                     <a href="/user/${post.user.id}/"><h4><b>${post.user.username}</b></h4></a>
-                    <h4 class="gray-text">${new Date(post.date_published).toLocaleDateString()}</h4>
+                    <h4 class="gray-text">${new Date(post.datePublished).toLocaleDateString()}</h4>
                 </article>
                 <figure>
-                    <img src="${post.media_url}" class="post-media">
+                    <img src="${post.mediaUrl}" class="post-media">
                     <section>
                         <span onclick="likePost(${post.id})" class="pointer like-btn ${likedClass}" id="like-btn-${post.id}">
                             <span class="heart">&hearts;</span> 
@@ -76,7 +76,7 @@ function renderPost(post) {
                         
                         <a href="/post_details/${post.id}/" class="p-2"><span class="material-symbols-outlined pointer">comment</span></a>
                     </section>
-                    <h5><span id="like-count-${post.id}">${post.likes_count}</span> likes</h5>
+                    <h5><span id="like-count-${post.id}">${post.likesCount}</span> likes</h5>
                     
                     ${post.content ? `
                         <figcaption class="truncate-text">

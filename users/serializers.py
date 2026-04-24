@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from auth_system.models import CustomUser, Subscription
-
+from django.db.models import Count
 
 class RegisterSerializer(serializers.ModelSerializer):
     # Пароль тільки для запису, ми не хочемо повертать його в JSON
@@ -24,44 +24,18 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    avatar_url = serializers.SerializerMethodField()
-    is_following = serializers.SerializerMethodField()
+    avatar_url = serializers.ReadOnlyField(source='avatar.url')
+    is_following = serializers.BooleanField(source='is_following_annotated', read_only=True)
     class Meta:
         model = CustomUser
         fields = ['id', 'username', 'avatar_url', 'is_following']
 
-    def get_avatar_url(self, obj):
-        if obj.avatar:
-            # Повертаємо пряме посилання на картинку в Cloudinary
-            return obj.avatar.url
-        return None
-    
-    def get_is_following(self, obj):
-        # Отримуємо об'єкт запиту з контексту серіалізатора
-        request = self.context.get('request')
-        
-        # Якщо користувач не авторизований або запиту немає — повертаємо False
-        if not request or not request.user.is_authenticated:
-            return False
-        
-        # Важливо: користувач не може бути підписаним на самого себе (логічно)
-        if request.user == obj:
-            return False
-
-        # Перевіряємо наявність запису в моделі Subscription
-        # Припускаємо, що у тебе поля називаються 'follower' та 'following'
-        return Subscription.objects.filter(
-            follower=request.user, 
-            following=obj
-        ).exists()
-
 
 class UserDetailSerializer(UserSerializer):
     posts = serializers.SerializerMethodField()
-    posts_count = serializers.IntegerField(source='posts.count', read_only=True)
-
-    followers_count = serializers.IntegerField(source='followers.count', read_only=True)
-    followings_count = serializers.IntegerField(source='following.count', read_only=True)
+    posts_count = serializers.IntegerField(read_only=True)
+    followers_count = serializers.IntegerField(read_only=True)
+    followings_count = serializers.IntegerField(read_only=True)
 
 
     class Meta(UserSerializer.Meta):
@@ -74,8 +48,14 @@ class UserDetailSerializer(UserSerializer):
         ]
     
     def get_posts(self, obj):
-        from post_system.serializers import PostSerializer
-        return PostSerializer(obj.posts.all(), many=True).data
+        from post_system.serializers import PostBaseSerializer
+
+        posts = obj.posts.annotate(
+            likes_count=Count('likes', distinct=True),
+            comments_count=Count('comments', distinct=True)
+        ).order_by('-date_published')[:12]
+        return PostBaseSerializer(posts, many=True).data
+
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):

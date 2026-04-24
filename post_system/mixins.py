@@ -1,6 +1,6 @@
 from django.core.exceptions import PermissionDenied
-from .models import Post
-from auth_system.models import Subscription
+from django.db.models import Exists, OuterRef, Case, When, BooleanField
+from .models import Post, Like
 
 
 class UserIsOwnerMixin:
@@ -22,18 +22,34 @@ class UserIsOwnerMixin:
 
 
 class PostQuerysetMixin:
-    """Спільна логіка фільтрації для Вебу та API"""
     def get_post_queryset(self):
-        category = self.request.GET.get('category', 'for_you') # для Web
-        if not category: # якщо GET порожній, перевіряємо query_params (для API)
-            category = self.request.query_params.get('category', 'for_you')
-
-        queryset = Post.objects.all().select_related('user').prefetch_related('likes', 'comments')
-
-        if category == 'following' and self.request.user.is_authenticated:
-            following_users = Subscription.objects.filter(
-                follower=self.request.user
-            ).values_list('following', flat=True)
-            queryset = queryset.filter(user__in=following_users)
+        # DRF автоматично об'єднує GET-параметри в query_params
+        category = self.request.query_params.get('category', 'for_you')
+        user = self.request.user
         
+        # 1. Базовий QuerySet з оптимізацією автора
+        # Прибираємо prefetch_related('likes'), бо ми замінимо його на Exists
+        queryset = Post.objects.select_related('user').all()
+
+        # 2. Додаємо "розумні" поля через анотації (SQL рівень)
+        if user.is_authenticated:
+            queryset = queryset.annotate(
+                is_liked=Exists(
+                    Like.objects.filter(user=user, post=OuterRef('pk'))
+                ),
+                is_owner=Case(
+                    When(user=user, then=True),
+                    default=False,
+                    output_field=BooleanField()
+                )
+            )
+
+            # 3. Фільтрація за категорією
+            if category == 'following':
+                # Замість values_list використовуємо фільтр прямо в основному запиті
+                # Це перетвориться на красивий SQL JOIN або IN (SELECT ...)
+                queryset = queryset.filter(
+                    user__followers__follower=user
+                ).distinct() # distinct потрібен, щоб уникнути дублів через JOIN
+
         return queryset.order_by('-date_published')
