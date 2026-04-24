@@ -69,7 +69,6 @@ class ChatSerializer(serializers.ModelSerializer):
         if msg:
             return {
                 'content': msg.content,
-                'formatted_time': format_date(msg.timestamp),
                 'is_read': msg.is_read,
                 'timestamp': msg.timestamp,
                 # Можна додати прапорець, щоб знати, чи це я написав останній

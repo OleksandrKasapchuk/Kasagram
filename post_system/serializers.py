@@ -3,46 +3,32 @@ from .models import *
 from users.serializers import UserSerializer
 
 
-class PostSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-    media_url = serializers.SerializerMethodField()
-    likes_count = serializers.IntegerField(source='likes.count', read_only=True)
-    comments_count = serializers.IntegerField(source='comments.count', read_only=True)
-    is_liked = serializers.SerializerMethodField()
-    is_owner = serializers.SerializerMethodField()
+class PostBaseSerializer(serializers.ModelSerializer):
+    media_url = serializers.ReadOnlyField(source='media.url')
     
+    likes_count = serializers.IntegerField(read_only=True)
+    comments_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Post
         fields = [
-            'id', 'user', 'content', 'media_url', 'media',
-            'date_published', 'likes_count', 'comments_count', 'is_liked', 'is_owner'
+            'id', 'media_url', 'likes_count', 'comments_count'
+        ]
+
+
+class PostSerializer(PostBaseSerializer):
+    user = UserSerializer(read_only=True)
+    
+    is_liked = serializers.BooleanField(read_only=True)
+    is_owner = serializers.BooleanField(read_only=True)
+    
+    class Meta(PostBaseSerializer.Meta):
+        fields = PostBaseSerializer.Meta.fields + [
+            'user', 'content', 'media', 'date_published', 'is_liked', 'is_owner'
         ]
         extra_kwargs = {
             'media': {'write_only': True}
         }
-
-    def get_media_url(self, obj):
-        if obj.media:
-            return obj.media.url
-        return None
-
-    def get_is_liked(self, obj):
-        # 1. Беремо request безпечно через .get()
-        request = self.context.get('request')
-        
-        # 2. Перевіряємо, чи взагале є request і чи є в ньому юзер
-        if request and request.user and request.user.is_authenticated:
-            return obj.likes.filter(user=request.user).exists()
-        
-        # Якщо запиту немає (наприклад, при генерації профілю без передачі context)
-        # або юзер не залогінений — повертаємо False
-        return False
-    
-    def get_is_owner(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return obj.user == request.user
-        return False
 
 
 class PostDetailSerializer(PostSerializer):

@@ -42,6 +42,30 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
+if DEBUG:
+    LOGGING = {
+            'version': 1,
+            'disable_existing_loggers': False,
+            'formatters': {
+                'sql': {
+                    'format': '\033[34m%(levelname)s\033[0m \033[32m%(message)s\033[0m', # Синій та зелений кольори
+                },
+            },
+            'handlers': {
+                'console': {
+                    'level': 'DEBUG',
+                    'class': 'logging.StreamHandler',
+                    'formatter': 'sql',
+                },
+            },
+            'loggers': {
+                'django.db.backends': {
+                    'handlers': ['console'],
+                    'level': 'DEBUG',
+                    'propagate': False,
+                },
+            },
+        }
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'kasagram.onrender.com', '10.0.2.2']
 
