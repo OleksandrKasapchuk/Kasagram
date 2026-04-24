@@ -24,7 +24,7 @@ class UserIsOwnerMixin:
 class PostQuerysetMixin:
     def get_post_queryset(self):
         # DRF автоматично об'єднує GET-параметри в query_params
-        category = self.request.query_params.get('category', 'for_you')
+        category = getattr(self.request, 'query_params', self.request.GET).get('category', 'for_you')
         user = self.request.user
         
         # 1. Базовий QuerySet з оптимізацією автора

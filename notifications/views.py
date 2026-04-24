@@ -4,15 +4,14 @@ from django.http import JsonResponse
 from .models import Notification
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from post_system.mixins import UserIsOwnerMixin
 
 
-class NotificationView(LoginRequiredMixin, UserIsOwnerMixin, ListView):
+class NotificationView(LoginRequiredMixin, ListView):
 	model = Notification
 	template_name = 'notifications/notifications.html'
 	context_object_name = "notifications"
 	def get_queryset(self):
-		return Notification.objects.filter(user_id=self.kwargs["pk"]).order_by('-created_at')[:5]
+		return Notification.objects.filter(user_id=self.request.user.pk).order_by('-created_at')[:10]
 
 
 def mark_notifications_as_read(request):
