@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from .models import *
 from common.utils import format_date
-from users.serializers import UserSerializer
+from users.serializers import UserBaseSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    actor = UserSerializer()
+    actor = UserBaseSerializer()
     message = serializers.ReadOnlyField(source='get_message')
     target_url = serializers.ReadOnlyField(source='get_url')
     created_at_human = serializers.SerializerMethodField()

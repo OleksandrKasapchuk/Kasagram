@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from .models import Message, Chat
-from users.serializers import UserSerializer
+from users.serializers import UserBaseSerializer
 from common.utils import format_date
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = UserBaseSerializer(read_only=True)
 
     is_me = serializers.SerializerMethodField()
 

@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework import status, viewsets
 from users.serializers import *
 from rest_framework.decorators import action
-from .serializers import UserSerializer 
+from .serializers import UserBaseSerializer 
 from django.db.models import Count, Exists, OuterRef, Value, BooleanField
 
 
@@ -51,7 +51,7 @@ class ToggleFollowAPIView(APIView):
 
 class MeAPIView(APIView):
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        serializer = UserBaseSerializer(request.user)
         return Response(serializer.data)
 
 
@@ -87,7 +87,7 @@ class UserRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return UserDetailSerializer
-        return UserSerializer
+        return UserBaseSerializer
 
     @action(detail=True, methods=['get'])
     def followers(self, request, pk=None):

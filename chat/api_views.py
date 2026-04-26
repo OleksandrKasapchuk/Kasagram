@@ -8,7 +8,7 @@ from .mixins import ChatMessageMixin
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.response import Response
-from users.serializers import UserSerializer
+from users.serializers import UserPublicSerializer
 
 
 class ChatPagination(PageNumberPagination):
@@ -33,7 +33,7 @@ class ChatMessagesAPIView(APIView, ChatMessageMixin):
         if not chat.participants.filter(id=request.user.id).exists():
             return Response({'success': False, 'error': 'Unauthorized'}, status=403)
         
-        participant = UserSerializer(chat.participants.exclude(id=request.user.pk).first()).data
+        participant = UserPublicSerializer(chat.participants.exclude(id=request.user.pk).first()).data
 
         oldest_id = request.GET.get('oldest_id') 
         messages_data = self.get_serialized_messages(chat, request, oldest_id=oldest_id)
