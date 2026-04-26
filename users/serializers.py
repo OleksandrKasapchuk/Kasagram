@@ -33,12 +33,21 @@ class UserSitemapSerializer(serializers.ModelSerializer):
         fields = ['id', 'username']
 
 
-# 1. Тільки те, що треба скрізь
+
 class UserBaseSerializer(serializers.ModelSerializer):
     avatar_url = serializers.ReadOnlyField(source='avatar.url')
     
     class Meta:
         model = CustomUser
+        fields = ['id', 'username', 'avatar_url']
+
+
+# 2. Публічна інфа (ідеально підходить для ЧАТУ та списків)
+class UserPublicSerializer(UserBaseSerializer):
+    is_following = serializers.BooleanField(source='is_following_annotated', read_only=True)
+    
+    class Meta(UserBaseSerializer.Meta):
+        fields = UserBaseSerializer.Meta.fields + ['is_online', 'last_seen', 'is_following']
         fields = ['id', 'username', 'avatar_url']
 
 
@@ -78,6 +87,9 @@ class UserDetailSerializer(UserPublicSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
+    
+    follower_details = UserBaseSerializer(source='follower', read_only=True)
+    following_details = UserBaseSerializer(source='following', read_only=True)
     
     follower_details = UserBaseSerializer(source='follower', read_only=True)
     following_details = UserBaseSerializer(source='following', read_only=True)
