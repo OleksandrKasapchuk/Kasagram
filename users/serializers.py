@@ -82,3 +82,45 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         if data['follower'] == data['following']:
             raise serializers.ValidationError("You cannot follow yourself.")
         return data
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """Серіалізатор для зміни пароля"""
+    old_password = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True)
+    new_password_confirm = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, data):
+        # Перевіряємо що новий пароль співпадає з підтвердженням
+        if data['new_password'] != data['new_password_confirm']:
+            raise serializers.ValidationError({
+                'new_password_confirm': "Паролі не збігаються."
+            })
+        
+        # Перевіряємо що новий пароль не дорівнює старому
+        if data['old_password'] == data['new_password']:
+            raise serializers.ValidationError({
+                'new_password': "Новий пароль не повинен збігатися зі старим."
+            })
+        
+        return data
+
+    def validate_new_password(self, value):
+        # Базова перевірка довжини пароля
+        if len(value) < 8:
+            raise serializers.ValidationError("Пароль повинен містити щонайменше 8 символів.")
+        return value
+
+
+class EditProfileSerializer(serializers.ModelSerializer):
+    """Серіалізатор для редагування профілю"""
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'first_name', 'last_name', 'bio', 'avatar']
+        extra_kwargs = {
+            'email': {'required': False},
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'bio': {'required': False},
+            'avatar': {'required': False},
+        }

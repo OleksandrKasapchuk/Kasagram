@@ -11,6 +11,7 @@ from common.permissions import *
 from rest_framework.generics import RetrieveAPIView
 from .models import Post
 from .serializers import PostDetailSerializer 
+from rest_framework.permissions import IsAuthenticated
 
 
 class PingView(APIView):
@@ -37,6 +38,7 @@ class PostListAPIView(PostQuerysetMixin, ListAPIView):
 class PostCreateAPIView(APIView):
     # Тепер ми приймаємо не просто форму, а Multipart дані (файл + текст)
     parser_classes = [parsers.MultiPartParser, parsers.FormParser]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = PostSerializer(data=request.data)
