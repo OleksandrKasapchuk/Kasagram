@@ -2,7 +2,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import status
 from users.serializers import *
 
 
@@ -42,3 +43,59 @@ def api_register(request):
     
     # Якщо дані "криві" — повертаємо помилки (наприклад: "цей email вже зайнятий")
     return Response(serializer.errors, status=400)
+
+
+# 3. ЗМІНА ПАРОЛЯ - для авторизованих користувачів
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_change_password(request):
+    """
+    Endpoint для зміни пароля авторизованого користувача
+    Вимагає: old_password, new_password, new_password_confirm
+    """
+    user = request.user
+    serializer = ChangePasswordSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        # Перевіряємо що старий пароль правильний
+        if not user.check_password(serializer.validated_data['old_password']):
+            return Response(
+                {'old_password': 'Старий пароль невірний.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Встановлюємо новий пароль
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        
+        return Response(
+            {'detail': 'Пароль успішно змінено.'},
+            status=status.HTTP_200_OK
+        )
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 4. РЕДАГУВАННЯ ПРОФІЛЮ - для авторизованих користувачів
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def api_edit_profile(request):
+    """
+    Endpoint для редагування профілю авторизованого користувача
+    Можна редагувати: email, first_name, last_name, bio, avatar
+    """
+    user = request.user
+    serializer = EditProfileSerializer(user, data=request.data, partial=True, context={'request': request})
+    
+    if serializer.is_valid():
+        serializer.save()
+        
+        return Response(
+            {
+                'detail': 'Профіль успішно оновлено.',
+                'user': UserDetailSerializer(user, context={'request': request}).data
+            },
+            status=status.HTTP_200_OK
+        )
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
