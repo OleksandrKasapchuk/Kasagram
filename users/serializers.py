@@ -88,14 +88,9 @@ class ChangePasswordSerializer(serializers.Serializer):
     """Серіалізатор для зміни пароля"""
     old_password = serializers.CharField(write_only=True, required=True)
     new_password = serializers.CharField(write_only=True, required=True)
-    new_password_confirm = serializers.CharField(write_only=True, required=True)
 
     def validate(self, data):
-        # Перевіряємо що новий пароль співпадає з підтвердженням
-        if data['new_password'] != data['new_password_confirm']:
-            raise serializers.ValidationError({
-                'new_password_confirm': "Паролі не збігаються."
-            })
+ 
         
         # Перевіряємо що новий пароль не дорівнює старому
         if data['old_password'] == data['new_password']:
