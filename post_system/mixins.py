@@ -1,5 +1,5 @@
 from django.core.exceptions import PermissionDenied
-from django.db.models import Exists, OuterRef, Case, When, BooleanField
+from django.db.models import Count, Exists, OuterRef, Case, When, BooleanField
 from .models import Post, Like
 
 
@@ -29,8 +29,11 @@ class PostQuerysetMixin:
         
         # 1. Базовий QuerySet з оптимізацією автора
         # Прибираємо prefetch_related('likes'), бо ми замінимо його на Exists
-        queryset = Post.objects.select_related('user').all()
-
+        queryset = Post.objects.select_related('user').annotate(
+            likes_count=Count('likes', distinct=True),
+            comments_count=Count('comments', distinct=True)
+        )
+        
         # 2. Додаємо "розумні" поля через анотації (SQL рівень)
         if user.is_authenticated:
             queryset = queryset.annotate(

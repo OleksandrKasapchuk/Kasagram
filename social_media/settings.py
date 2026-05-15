@@ -42,33 +42,45 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-if DEBUG:
-    LOGGING = {
-            'version': 1,
-            'disable_existing_loggers': False,
-            'formatters': {
-                'sql': {
-                    'format': '\033[34m%(levelname)s\033[0m \033[32m%(message)s\033[0m', # Синій та зелений кольори
-                },
-            },
-            'handlers': {
-                'console': {
-                    'level': 'DEBUG',
-                    'class': 'logging.StreamHandler',
-                    'formatter': 'sql',
-                },
-            },
-            'loggers': {
-                'django.db.backends': {
-                    'handlers': ['console'],
-                    'level': 'DEBUG',
-                    'propagate': False,
-                },
-            },
-        }
-
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'kasagram.onrender.com', '10.0.2.2']
+CORS_ALLOW_CREDENTIALS = True
 
+if DEBUG:
+    # Локальна розробка (HTTP)
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE = 'Lax'
+else:
+    # Продакшн (HTTPS)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'None'
+
+if DEBUG:
+    # У режимі розробки листи в терміналі — це зручно і швидко
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # На сервері (де DEBUG=False) працюватиме реальна пошта
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = "smtp-relay.brevo.com"
+EMAIL_PORT = 2525
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+EMAIL_USE_TLS = True
+
+DEFAULT_FROM_EMAIL = "kasapchukoleksandr@gmail.com"
+ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 INSTALLED_APPS = [
     'daphne',
@@ -155,9 +167,14 @@ CHANNEL_LAYERS = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:5173",
+    "http://127.0.0.1:3000",
     "https://kasagram.vercel.app",
+]
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://kasagram.vercel.app",
 ]
 
 # Database
