@@ -69,10 +69,12 @@ class LikeAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PostDetailAPIView(RetrieveAPIView):
-    queryset = Post.objects.all()
+class PostDetailAPIView(PostQuerysetMixin, RetrieveAPIView):
     serializer_class = PostDetailSerializer
     
+    def get_queryset(self):
+        # Використовуємо той самий метод, що і в списку постів
+        return self.get_post_queryset()
     def get_serializer_context(self):
         # Це обов'язково для роботи request всередині SerializerMethodField
         context = super().get_serializer_context()
