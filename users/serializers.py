@@ -22,6 +22,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
+class UserSitemapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username']
+
 
 # 1. Тільки те, що треба скрізь
 class UserBaseSerializer(serializers.ModelSerializer):

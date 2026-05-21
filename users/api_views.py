@@ -7,7 +7,7 @@ from users.serializers import *
 from rest_framework.decorators import action
 from .serializers import UserBaseSerializer 
 from django.db.models import Count, Exists, OuterRef, Value, BooleanField
-
+from rest_framework.permissions import AllowAny
 
 class UserDetailAPIView(APIView):
     def get(self, request, pk):
@@ -57,7 +57,7 @@ class MeAPIView(APIView):
 
 class UserRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CustomUser.objects.all()
-
+    permission_classes = [AllowAny]
     def get_queryset(self):
         """Централізована оптимізація всіх запитів"""
         user = self.request.user
@@ -85,7 +85,9 @@ class UserRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
     
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == 'list':
+            return UserSitemapSerializer
+        elif self.action == 'retrieve':
             return UserDetailSerializer
         return UserBaseSerializer
 
