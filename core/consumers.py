@@ -9,10 +9,24 @@ from .mixins import *
 class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = f'chat_{self.room_name}'
+        self.room_group_name = f"chat_{self.room_name}"
 
-        await self.channel_layer.group_add(self.room_group_name,self.channel_name)
+        user = self.scope.get("user")
+        
+        # 🛑 Якщо мідлвар не зміг авторизувати юзера — відшиваємо його ОДРАЗУ на етапі рукостискання
+        if not user or not user.is_authenticated:
+            print(f"❌ Відхилено підключення: Користувач не авторизований.")
+            await self.close(code=4003)
+            return
+
+        # Якщо все ок — підключаємо до кімнати
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
         await self.accept()
+        print(f"✅ Юзер {user.username} успішно підключився до сокету кімнати {self.room_name}")
+    
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
@@ -69,7 +83,18 @@ class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
     
     async def handle_chat_message(self, data):
         content = data['content']
-        username = data['username']
+        user = self.scope["user"]
+        user = self.scope.get("user")
+    
+        # 1. Жорстка перевірка: якщо юзера немає або він анонім — виходимо
+        if not user or not user.is_authenticated:
+            print("❌ Помилка: Неавторизований користувач намагався надіслати повідомлення.")
+            await self.close(code=4003)  # Закриваємо сокет, щоб фронтенд знав про проблему
+            return
+
+        # 2. Тепер Python на 100% впевнений, що user є і у нього є username
+        username = user.username
+
         parent_id = data.get('parent_id')
         msg_data = await self.save_message(username, self.room_name, content, parent_id)
 
@@ -80,7 +105,7 @@ class ChatConsumer(AsyncWebsocketConsumer, ChatDatabaseMixin):
                 'content': content,
                 'username': username,
                 'message_id': msg_data['id'],
-                'timestamp': msg_data['timestamp'].strftime('%H:%M'),
+                'timestamp': msg_data['timestamp'].isoformat(),
                 'parent_content': msg_data['parent_content'],
                 'parent_username': msg_data['parent_username'],
                 'temp_id': data.get('temp_id')

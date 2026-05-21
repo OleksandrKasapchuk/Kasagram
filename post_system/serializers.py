@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import *
-from users.serializers import UserSerializer
+from users.serializers import UserBaseSerializer
 
 
 class PostBaseSerializer(serializers.ModelSerializer):
@@ -17,7 +17,7 @@ class PostBaseSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(PostBaseSerializer):
-    user = UserSerializer(read_only=True)
+    user = UserBaseSerializer(read_only=True)
     
     is_liked = serializers.BooleanField(read_only=True)
     is_owner = serializers.BooleanField(read_only=True)
@@ -46,7 +46,7 @@ class PostDetailSerializer(PostSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = UserBaseSerializer(read_only=True)
     parent_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     
     # Додаємо replies для відображення дерева (Read Only)
