@@ -22,6 +22,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
+class UserSitemapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username']
+
 
 class UserSerializer(serializers.ModelSerializer):
     avatar_url = serializers.ReadOnlyField(source='avatar.url')
