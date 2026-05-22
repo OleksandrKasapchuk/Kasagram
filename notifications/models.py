@@ -1,39 +1,33 @@
 from django.db import models
 from auth_system.models import CustomUser
-from post_system.models import *
-from chat.models import *
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
-
 class Notification(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="notifications")
-    actor = models.ForeignKey(CustomUser,on_delete=models.CASCADE, related_name="actions")
+    # Набір типів сповіщень для уникнення помилок
+    class NotificationType(models.TextChoices):
+        LIKE = 'LIKE', 'liked your post'
+        COMMENT = 'COMMENT', 'commented on your post'
+        MESSAGE = 'MESSAGE', 'sent you a message'
+        FOLLOW = 'FOLLOW', 'started following you'
 
-    # Службові поля для Generic Relation
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="notifications")
+    actor = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="actions")
+
+    # Тип сповіщення, який легко читати фронтенду
+    notification_type = models.CharField(
+        max_length=20, 
+        choices=NotificationType.choices,
+        default=NotificationType.LIKE
+    )
+
+    # Generic Relation поля
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    # Це і є наш "універсальний" об'єкт (Post, Comment, Chat тощо)
     target = GenericForeignKey('content_type', 'object_id')
     
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.actor} -> {self.user} ({self.type})"
-    
-    def get_url(self):
-        # Тепер ми можемо просто викликати get_absolute_url у об'єкта, якщо він є
-        if hasattr(self.target, 'get_absolute_url'):
-            return self.target.get_absolute_url()
-        return "#"
-
-    def get_message(self):
-        # Можна зробити словник типів для зручності
-        messages = {
-            'post': "liked your post",
-            'comment': "commented on your post",
-            'chat': "sent you a message",
-        }
-        # content_type.model поверне рядок 'post', 'comment' і т.д.
-        return messages.get(self.content_type.model, "interacted with you")
+        return f"{self.actor} -> {self.user} ({self.notification_type})"
