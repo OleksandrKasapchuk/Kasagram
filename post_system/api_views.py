@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, DestroyAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView
 from .models import Post
 from .serializers import *
 from .mixins import PostQuerysetMixin
@@ -12,7 +12,10 @@ from rest_framework.generics import RetrieveAPIView
 from .models import Post
 from .serializers import PostDetailSerializer 
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework import viewsets
+from .models import Comment
+from .serializers import CommentSerializer
+from common.permissions import IsOwner 
 
 class PingView(APIView):
     permission_classes = [AllowAny]
@@ -82,14 +85,56 @@ class PostDetailAPIView(PostQuerysetMixin, RetrieveAPIView):
         return context
 
 
-class DeleteCommentAPIView(DestroyAPIView):
-    queryset = Comment.objects.all()
-    permission_classes = [IsOwner]
 
-
-class CommentCreateAPIView(CreateAPIView):
+class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+
+    def get_serializer_class(self):
+        """
+        Динамічно вибираємо серіалізатор:
+        - Для оновлення (update, partial_update) беремо легкий BaseCommentSerializer (тільки content).
+        - Для всього іншого (list, retrieve, create) — повний CommentSerializer.
+        """
+        if self.action in ['update', 'partial_update']:
+            return BaseCommentSerializer
+        return CommentSerializer
+    
+    def get_permissions(self):
+        """
+        Гнучко налаштовуємо права доступу:
+        - Створення та читання: доступно будь-якому авторизованому юзеру.
+        - Оновлення (update, partial_update) та Видалення (destroy): тільки власнику коментаря.
+        """
+        if self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthenticated, IsOwner]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
     def perform_create(self, serializer):
-        # Прив'язуємо поточного юзера автоматично
+        # Автоматично прив'язуємо автора коментаря
         serializer.save(user=self.request.user)
+
+    def update(self, request, *x, **kwargs):
+        """
+        Кастомізуємо апдейт, щоб він приймав ЛІШЕ поле 'content' 
+        і повертав чистий результат, як ти й хотів.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        
+        # Беремо з запиту тільки 'content', щоб юзер випадково (або навмисно) 
+        # не змінив post_id чи автора коментаря.
+        data = {'content': request.data.get('content')}
+        
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        # Повертаємо оновлений контент та статус 200
+        return Response(serializer.data, status=status.HTTP_200_OK)

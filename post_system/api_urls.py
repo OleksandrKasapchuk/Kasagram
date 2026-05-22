@@ -1,5 +1,10 @@
-from django.urls import path
+from django.urls import path, include
 from .api_views import *
+from rest_framework.routers import SimpleRouter
+
+
+router = SimpleRouter()
+router.register(r'comments', CommentViewSet, basename='comment')
 
 
 urlpatterns = [
@@ -8,6 +13,5 @@ urlpatterns = [
     path('posts/<int:pk>/', PostDetailAPIView.as_view()),
     path('posts/create/', PostCreateAPIView.as_view()),
     path('like/<int:pk>/', LikeAPIView.as_view()),
-    path('comments/delete/<int:pk>/', DeleteCommentAPIView.as_view(), name='delete-comment'),
-    path('comments/create/', CommentCreateAPIView.as_view(), name='create-comment'),
+    path('', include(router.urls)),
 ]
