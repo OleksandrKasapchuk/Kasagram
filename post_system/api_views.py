@@ -29,27 +29,51 @@ class PostPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class PostListAPIView(PostQuerysetMixin, ListAPIView):
-    serializer_class = PostSerializer
+class PostViewSet(PostQuerysetMixin, viewsets.ModelViewSet):
+    """
+    Об'єднаний в'юсет для постів:
+    - Читання списку та детально (list, retrieve): AllowAny
+    - Створення (create): IsAuthenticated
+    - Видалення (destroy): IsAuthenticated + IsOwner
+    """
     pagination_class = PostPagination
-    permission_classes = [AllowAny]
+    # Додаємо парсери прямо сюди, щоб працювало завантаження медіа при створенні
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
 
     def get_queryset(self):
+        # Використовуємо твій міксин для оптимізації запитів (select_related/prefetch_related)
         return self.get_post_queryset()
 
+    def get_serializer_class(self):
+        """
+        Для детального перегляду (retrieve) використовуємо детальний серіалізатор,
+        для списку (list) та створення (create) — базовий PostSerializer.
+        """
+        if self.action == 'retrieve':
+            return PostDetailSerializer
+        return PostSerializer
 
-class PostCreateAPIView(APIView):
-    # Тепер ми приймаємо не просто форму, а Multipart дані (файл + текст)
-    parser_classes = [parsers.MultiPartParser, parsers.FormParser]
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        """
+        Гнучкі права доступу для постів.
+        """
+        if self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthenticated, IsOwner]
+        elif self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [AllowAny] # list та retrieve
+        return [permission() for permission in permission_classes]
 
-    def post(self, request, *args, **kwargs):
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            # Прив'язуємо юзера (як ти робив у form_valid)
-            serializer.save(user=request.user) 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        # Автоматично прив'язуємо поточного юзера як автора поста
+        serializer.save(user=self.request.user)
+
+    def get_serializer_context(self):
+        # Передаємо request у контекст (треба для роботи SerializerMethodField в PostDetailSerializer)
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 
 class LikeAPIView(APIView):
@@ -71,18 +95,6 @@ class LikeAPIView(APIView):
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class PostDetailAPIView(PostQuerysetMixin, RetrieveAPIView):
-    serializer_class = PostDetailSerializer
-    
-    def get_queryset(self):
-        # Використовуємо той самий метод, що і в списку постів
-        return self.get_post_queryset()
-    def get_serializer_context(self):
-        # Це обов'язково для роботи request всередині SerializerMethodField
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
 
 
 
