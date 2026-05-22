@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, DestroyAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView
 from .models import Post
 from .serializers import *
 from .mixins import PostQuerysetMixin
@@ -12,7 +12,10 @@ from rest_framework.generics import RetrieveAPIView
 from .models import Post
 from .serializers import PostDetailSerializer 
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework import viewsets
+from .models import Comment
+from .serializers import CommentSerializer
+from common.permissions import IsOwner 
 
 class PingView(APIView):
     permission_classes = [AllowAny]
@@ -26,27 +29,51 @@ class PostPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class PostListAPIView(PostQuerysetMixin, ListAPIView):
-    serializer_class = PostSerializer
+class PostViewSet(PostQuerysetMixin, viewsets.ModelViewSet):
+    """
+    Об'єднаний в'юсет для постів:
+    - Читання списку та детально (list, retrieve): AllowAny
+    - Створення (create): IsAuthenticated
+    - Видалення (destroy): IsAuthenticated + IsOwner
+    """
     pagination_class = PostPagination
-    permission_classes = [AllowAny]
+    # Додаємо парсери прямо сюди, щоб працювало завантаження медіа при створенні
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
 
     def get_queryset(self):
+        # Використовуємо твій міксин для оптимізації запитів (select_related/prefetch_related)
         return self.get_post_queryset()
 
+    def get_serializer_class(self):
+        """
+        Для детального перегляду (retrieve) використовуємо детальний серіалізатор,
+        для списку (list) та створення (create) — базовий PostSerializer.
+        """
+        if self.action == 'retrieve':
+            return PostDetailSerializer
+        return PostSerializer
 
-class PostCreateAPIView(APIView):
-    # Тепер ми приймаємо не просто форму, а Multipart дані (файл + текст)
-    parser_classes = [parsers.MultiPartParser, parsers.FormParser]
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        """
+        Гнучкі права доступу для постів.
+        """
+        if self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthenticated, IsOwner]
+        elif self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [AllowAny] # list та retrieve
+        return [permission() for permission in permission_classes]
 
-    def post(self, request, *args, **kwargs):
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            # Прив'язуємо юзера (як ти робив у form_valid)
-            serializer.save(user=request.user) 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        # Автоматично прив'язуємо поточного юзера як автора поста
+        serializer.save(user=self.request.user)
+
+    def get_serializer_context(self):
+        # Передаємо request у контекст (треба для роботи SerializerMethodField в PostDetailSerializer)
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 
 class LikeAPIView(APIView):
@@ -69,27 +96,57 @@ class LikeAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PostDetailAPIView(PostQuerysetMixin, RetrieveAPIView):
-    serializer_class = PostDetailSerializer
-    
-    def get_queryset(self):
-        # Використовуємо той самий метод, що і в списку постів
-        return self.get_post_queryset()
-    def get_serializer_context(self):
-        # Це обов'язково для роботи request всередині SerializerMethodField
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
 
 
-class DeleteCommentAPIView(DestroyAPIView):
-    queryset = Comment.objects.all()
-    permission_classes = [IsOwner]
-
-
-class CommentCreateAPIView(CreateAPIView):
+class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+
+    def get_serializer_class(self):
+        """
+        Динамічно вибираємо серіалізатор:
+        - Для оновлення (update, partial_update) беремо легкий BaseCommentSerializer (тільки content).
+        - Для всього іншого (list, retrieve, create) — повний CommentSerializer.
+        """
+        if self.action in ['update', 'partial_update']:
+            return BaseCommentSerializer
+        return CommentSerializer
+    
+    def get_permissions(self):
+        """
+        Гнучко налаштовуємо права доступу:
+        - Створення та читання: доступно будь-якому авторизованому юзеру.
+        - Оновлення (update, partial_update) та Видалення (destroy): тільки власнику коментаря.
+        """
+        if self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthenticated, IsOwner]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
     def perform_create(self, serializer):
-        # Прив'язуємо поточного юзера автоматично
+        # Автоматично прив'язуємо автора коментаря
         serializer.save(user=self.request.user)
+
+    def update(self, request, *x, **kwargs):
+        """
+        Кастомізуємо апдейт, щоб він приймав ЛІШЕ поле 'content' 
+        і повертав чистий результат, як ти й хотів.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        
+        # Беремо з запиту тільки 'content', щоб юзер випадково (або навмисно) 
+        # не змінив post_id чи автора коментаря.
+        data = {'content': request.data.get('content')}
+        
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        # Повертаємо оновлений контент та статус 200
+        return Response(serializer.data, status=status.HTTP_200_OK)

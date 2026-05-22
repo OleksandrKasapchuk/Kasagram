@@ -45,7 +45,13 @@ class PostDetailSerializer(PostSerializer):
         return CommentSerializer(root_comments, many=True).data
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class BaseCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'content']
+
+
+class CommentSerializer(BaseCommentSerializer):
     user = UserBaseSerializer(read_only=True)
     parent_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     
@@ -54,9 +60,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = [
-            'id', 'user', 'post', 'content', 
-            'date_published', 'parent', 'parent_id', 'replies'
+        fields = BaseCommentSerializer.Meta.fields + [
+            'user', 'post', 'date_published', 'parent', 'parent_id', 'replies'
         ]
         read_only_fields = ['date_published', 'user']
 
