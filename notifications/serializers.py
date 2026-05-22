@@ -1,21 +1,20 @@
 from rest_framework import serializers
-from .models import *
-from common.utils import format_date
-from users.serializers import UserBaseSerializer
+from .models import Notification
+from users.serializers import UserBaseSerializer  # чи як там у тебе називається файл
 
 
 class NotificationSerializer(serializers.ModelSerializer):
     actor = UserBaseSerializer()
-    message = serializers.ReadOnlyField(source='get_message')
-    target_url = serializers.ReadOnlyField(source='get_url')
-    created_at_human = serializers.SerializerMethodField()
-
+    
+    # 🎯 Замість get_message просимо Django повернути human-лейбл з Choices
+    message = serializers.ReadOnlyField(source='get_notification_type_display')
+    
+    type = serializers.CharField(source='notification_type')
+    target_id = serializers.IntegerField(source='object_id')
+    
     class Meta:
         model = Notification
         fields = [
-            'id', 'actor', 'message', 
-            'target_url', 'is_read', 'created_at', 'created_at_human'
+            'id', 'actor', 'message', 'type', 
+            'target_id', 'is_read', 'created_at'
         ]
-
-    def get_created_at_human(self, obj):
-        return format_date(obj.created_at)
